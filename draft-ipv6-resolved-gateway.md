@@ -7,18 +7,18 @@ submissiontype: IETF
 date:
 consensus: true
 v: 3
-area: Internet
-workgroup: Network Working Group
+# area: Internet
+# workgroup: Network Working Group
 keyword:
  - ipv6
  - ipv4
  - gateway
  - special-purpose address
 venue:
-  group: Network Working Group
-  type: Working Group
-  mail: remco@asteroidhq.com
-  github: remcovanmook/draft-ipv6-resolved-gateway
+#  group: Network Working Group
+#  type: Working Group
+#  mail: remco@asteroidhq.com
+  github: "remcovanmook/draft-ipv6-resolved-gateway"
 
 author:
  -
