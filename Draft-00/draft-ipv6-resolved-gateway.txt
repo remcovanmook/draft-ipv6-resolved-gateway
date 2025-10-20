@@ -1,0 +1,206 @@
+
+
+
+
+Network Working Group                                         R. V. Mook
+Internet-Draft                               Asteroid International B.V.
+Intended status: Informational                           20 October 2025
+Expires: 23 April 2026
+
+
+                       IPv6-Resolved IPv4 Gateway
+                   draft-ipv6-resolved-gateway-latest
+
+Abstract
+
+   This document requests the allocation of a new IPv4 special-purpose
+   address from the IANA IPv4 Special-Purpose Address Registry.  The
+   proposed address, 192.0.0.11/32, is intended to serve as a signal to
+   IPv4 hosts in IPv6-only networks that the link-layer resolution for
+   the default gateway should be derived from the IPv6 default gateway
+   learned via IPv6 Router Advertisements and Neighbor Discovery.
+
+   This approach enables IPv4 communication without requiring IPv4
+   subnets or the use of ARP.  It maintains backward compatibility with
+   existing IPv4 host software that expects a default gateway IP
+   address, while avoiding the need to implement legacy link-layer
+   protocols.
+
+About This Document
+
+   This note is to be removed before publishing as an RFC.
+
+   Status information for this document may be found at
+   https://datatracker.ietf.org/doc/draft-ipv6-resolved-gateway/.
+
+   Source for this draft and an issue tracker can be found at
+   https://github.com/remcovanmook/draft-ipv6-resolved-gateway.
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on 23 April 2026.
+
+Copyright Notice
+
+   Copyright (c) 2025 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents (https://trustee.ietf.org/
+   license-info) in effect on the date of publication of this document.
+   Please review these documents carefully, as they describe your rights
+   and restrictions with respect to this document.  Code Components
+   extracted from this document must include Revised BSD License text as
+   described in Section 4.e of the Trust Legal Provisions and are
+   provided without warranty as described in the Revised BSD License.
+
+Table of Contents
+
+   1.  Introduction
+   2.  Conventions and Definitions
+   3.  Rationale
+   4.  Host Behavior and Next-Hop Resolution
+   5.  Compatibility Considerations
+   6.  Security Considerations
+   7.  IANA Considerations
+   8.  Normative References
+   Acknowledgments
+   Author's Address
+
+1.  Introduction
+
+   In IPv6-only infrastructure environments, such as modern data centers
+   and ISP networks, IPv4 communication may still be required by
+   applications or systems.  However, traditional IPv4 mechanisms like
+   ARP and subnet configuration impose unnecessary complexity in such
+   environments.
+
+   Hosts in these environments typically receive IPv6 configuration
+   through SLAAC or DHCPv6, including a default gateway.  This document
+   proposes a method by which IPv4 traffic may also be sent without
+   requiring ARP or an IPv4 subnet: by configuring a well-known IPv4
+   address (192.0.0.11) as the default gateway, and resolving its link-
+   layer address using the IPv6 default gateway learned by the host.
+
+2.  Conventions and Definitions
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+   "OPTIONAL" in this document are to be interpreted as described in
+   BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all
+   capitals, as shown here.
+
+3.  Rationale
+
+   The key goal is to enable IPv4 communication in environments that are
+   natively IPv6-only, without relying on dual-stack or tunneling.  This
+   is accomplished by decoupling IPv4 next-hop resolution from ARP and
+   instead aligning it with the IPv6 default gateway.
+
+   By defining 192.0.0.11 as a special-purpose IPv4 address, hosts can
+   be configured with IPv4 /32 addresses and this default gateway,
+   eliminating the need for any IPv4 subnet or address resolution
+   mechanisms.
+
+4.  Host Behavior and Next-Hop Resolution
+
+   When a host is configured to use 192.0.0.11 as its IPv4 default
+   gateway, the host's operating system should implement the following
+   logic:
+
+   *  Upon startup or interface configuration, the host listens for IPv6
+      Router Advertisements (RAs) and records the IPv6 default gateway
+      and associated link-layer address via Neighbor Discovery.
+
+   *  When sending an IPv4 packet where the next hop is 192.0.0.11,
+      instead of performing an ARP resolution, the host stack consults
+      its IPv6 neighbor cache for the link-layer address associated with
+      the IPv6 default gateway.
+
+   *  If the IPv6 default gateway is known, and the link-layer address
+      is valid and reachable, the IPv4 packet is sent directly using
+      that link-layer destination address.
+
+   *  If the IPv6 gateway is not yet known or reachable, the IPv4 packet
+      should be queued or dropped per implementation policy, and a
+      Neighbor Solicitation initiated for the IPv6 gateway.
+
+5.  Compatibility Considerations
+
+   *  Hosts continue to use standard IPv4 protocol semantics and packet
+      formats.
+
+   *  Applications requiring IPv4 continue to function as expected.
+
+   *  No changes are required to the IPv4 packet format.
+
+   *  The only change is that 192.0.0.11 is interpreted by the host
+      stack as an indicator to use the link-layer information from the
+      IPv6 default gateway.
+
+6.  Security Considerations
+
+   This approach reduces ARP-related attack surfaces by removing ARP
+   from the network.  It assumes integrity of IPv6 neighbor discovery,
+   and any associated risks (e.g., spoofed RAs) are equivalent to
+   standard IPv6 host risks.
+
+   Additionally, subnet scanning attacks against IPv4 networks are
+   mitigated, since hosts are only configured with /32 addresses and ARP
+   is not available to discover neighbors.
+
+7.  IANA Considerations
+
+   This document requests the following addition to the IANA IPv4
+   Special-Purpose Address Registry:
+
+   +=============+=============+=========+==========+===========+======+===========+===========+======+=========+
+   |Address Block|Name         |RFC      |Allocation|Termination|Source|Destination|Forwardable|Global|Reserved-|
+   |             |             |         |Date      |Date       |      |           |           |      |by-      |
+   |             |             |         |          |           |      |           |           |      |Protocol |
+   +=============+=============+=========+==========+===========+======+===========+===========+======+=========+
+   |192.0.0.11/32|IPv6-Resolved|[This    |[To be    |N/A        |False |True       |True       |No    |No       |
+   |             |Default      |document]|assigned] |           |      |           |           |      |         |
+   |             |Gateway      |         |          |           |      |           |           |      |         |
+   +-------------+-------------+---------+----------+-----------+------+-----------+-----------+------+---------+
+
+                                  Table 1
+
+8.  Normative References
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/rfc/rfc2119>.
+
+   [RFC4861]  "Neighbor Discovery for IP version 6 (IPv6)", n.d..
+
+   [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
+              2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
+              May 2017, <https://www.rfc-editor.org/rfc/rfc8174>.
+
+   [RFC8200]  "Internet Protocol, Version 6 (IPv6) Specification", n.d..
+
+Acknowledgments
+
+   The author would like to thank Tobias Fiebig and Warren Kumari for
+   their input on this document.
+
+Author's Address
+
+   Remco van Mook
+   Asteroid International B.V.
+   Email: remco@@asteroidhq.comom
