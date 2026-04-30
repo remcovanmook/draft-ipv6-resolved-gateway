@@ -2,7 +2,7 @@
 
 # IPv6-Resolved IPv4 Gateway
 
-This is the working area for the individual Internet-Draft, "IPv6-Resolved IPv4 Gateway".
+This is the working area for the individual Internet-Draft, "IPv6-Resolved IPv4 Gateway". Reworked 00-draft after last meeting. 
 
 * [Editor's Copy](https://remcovanmook.github.io/draft-ipv6-resolved-gateway/#go.draft-ipv6-resolved-gateway.html)
 * [Datatracker Page](https://datatracker.ietf.org/doc/draft-ipv6-resolved-gateway)
