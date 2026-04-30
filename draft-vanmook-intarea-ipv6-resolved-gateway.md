@@ -1,7 +1,7 @@
 ---
 title: IPv6-Resolved IPv4 Gateway
 abbrev: IPv6-Resolved IPv4 GW
-docname: draft-vanmook-intarea-ipv6-resolved-gateway-00
+docname: draft-vanmook-intarea-ipv6-resolved-gateway-latest
 date: 2026-04-30
 category: std
 ipr: trust200902
