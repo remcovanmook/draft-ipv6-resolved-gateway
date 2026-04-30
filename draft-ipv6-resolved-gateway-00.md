@@ -2,7 +2,7 @@
 title: "IPv6-Resolved IPv4 Gateway"
 category: info
 
-docname: draft-ipv6-resolved-gateway-latest
+docname: draft-ipv6-resolved-gateway-00
 submissiontype: IETF
 date:
 consensus: true
@@ -24,7 +24,7 @@ author:
  -
     fullname: Remco van Mook
     organization: Asteroid International B.V.
-    email: remco@@asteroidhq.comom
+    email: remco@@asteroidhq.com
 
 normative:
   RFC4861:
@@ -89,9 +89,17 @@ Additionally, subnet scanning attacks against IPv4 networks are mitigated, since
 
 This document requests the following addition to the IANA IPv4 Special-Purpose Address Registry:
 
-| Address Block | Name | RFC | Allocation Date | Termination Date | Source | Destination | Forwardable | Global | Reserved-by-Protocol |
-|--------------|------|-----|-----------------|------------------|---------|-------------|-------------|--------|-------------------|
-| 192.0.0.11/32 | IPv6-Resolved Default Gateway | [This document] | [To be assigned] | N/A | False | True | True | No | No |
+Address Block: 192.0.0.11/32
+Name: IPv6-Resolved Default Gateway
+RFC: [This document]
+Allocation Date: [to be assigned]
+Termination Date: N/A
+Source: False
+Destination: True
+Forwardable: True
+Global: No
+Reserved-by-Protocol: No
+
 
 --- back
 
