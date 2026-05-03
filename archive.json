@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-04-30T00:20:26.540579+00:00",
+  "timestamp": "2026-05-03T00:18:33.202613+00:00",
   "repo": "remcovanmook/draft-ipv6-resolved-gateway",
   "labels": [
     {
@@ -50,5 +50,34 @@
     }
   ],
   "issues": [],
-  "pulls": []
+  "pulls": [
+    {
+      "number": 1,
+      "id": "PR_kwDOPzmSBc7XGIUo",
+      "title": "fix: skip tag-annotation fetch step on workflow_dispatch",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/pull/1",
+      "state": "MERGED",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "The 'Get Tag Annotations' step runs:\r\n  git fetch -f origin ${{ github.ref }}:${{ github.ref }}\r\n\r\nWhen the workflow is triggered manually (workflow_dispatch), github.ref resolves to refs/heads/main. Git refuses to fetch into a branch that is already checked out, exiting with code 128.\r\n\r\nThe fetch is only meaningful for tag-triggered runs (it retrieves annotated tag metadata that the shallow checkout misses). Add an 'if: startsWith(github.ref, \"refs/tags/\")' condition so the step is skipped entirely on manual dispatch triggers.",
+      "createdAt": "2026-04-30T12:20:19Z",
+      "updatedAt": "2026-04-30T12:31:50Z",
+      "baseRepository": "remcovanmook/draft-ipv6-resolved-gateway",
+      "baseRefName": "main",
+      "baseRefOid": "bdb85255f3a2761475e7bb7d8c983f7709adb380",
+      "headRepository": "remcovanmook/draft-ipv6-resolved-gateway",
+      "headRefName": "fix/publish-workflow-dispatch",
+      "headRefOid": "66126addd3677eba8fa1d2962eef680fa21bcc3c",
+      "closedAt": "2026-04-30T12:23:39Z",
+      "mergedAt": "2026-04-30T12:23:39Z",
+      "mergedBy": "remcovanmook",
+      "mergeCommit": {
+        "oid": "24a5966dff4b1d9bab484cdf0d5ebf004a680ad6"
+      },
+      "comments": [],
+      "reviews": []
+    }
+  ]
 }
