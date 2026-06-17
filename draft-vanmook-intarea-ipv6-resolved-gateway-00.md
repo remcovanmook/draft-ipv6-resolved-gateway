@@ -2,7 +2,7 @@
 title: IPv6-Resolved IPv4 Gateway
 abbrev: IPv6-Resolved IPv4 GW
 docname: draft-vanmook-intarea-ipv6-resolved-gateway-latest
-date: 2026-06-27
+date: 2026-04-30
 category: std
 ipr: trust200902
 workgroup: intarea
@@ -19,7 +19,7 @@ pi: [toc, sortrefs, symrefs]
 
 author:
  -
-    ins: R. van Mook
+    ins: R.S. van Mook
     name: Remco van Mook
     org: Asteroid International B.V.
     email: remco@asteroidhq.com
@@ -31,87 +31,37 @@ normative:
   RFC8950:
 
 informative:
-  RFC1027:
   RFC1122:
-  I-D.ietf-intarea-v4-via-v6:
   RFC5737:
   RFC2132:
   RFC3927:
   RFC6105:
   RFC7600:
   RFC8925:
-  I-D.ietf-v6ops-6mops:
-  I-D.ietf-v6ops-claton:
 --- abstract
 
-This document specifies host behavior enabling IPv4 communication
-for dual-stack hosts on IPv6-only segments, without
-subnets, ARP, tunneling, or translation. Hosts that receive
-`192.0.0.11/32` as their IPv4 default gateway address resolve
-the next-hop link-layer address from the IPv6 neighbor cache
-rather than via ARP. IPv4 packets are forwarded
-natively, end-to-end. The mechanism is incrementally deployable
-alongside unmodified hosts with no changes to DHCPv4
-infrastructure. This document
-requests the allocation of `192.0.0.11/32` in the IANA IPv4
-Special-Purpose Address Registry to support this mechanism.
+This document requests the allocation of the IPv4 special-purpose
+address `192.0.0.11/32` to enable IPv4 communication over IPv6-only
+networks without subnets, ARP, tunneling, or translation. Hosts
+configured with this address as their IPv4 default gateway resolve
+the next-hop link-layer address from the IPv6 neighbor cache instead
+of via ARP. IPv4 packets are carried natively, end-to-end.
 
 --- middle
 
 # Introduction
 
-An IPv4 address functions as a service endpoint identifier --
-either for a client seeking access to a service, or a server
-providing one. The BSD socket API, present in virtually every
-operating system and language runtime, expresses this directly:
-a call to `connect(AF_INET, "192.0.2.1", 80)` is a statement
-about which service to reach, not about routing or link-layer
-resolution. The host implements IPv4 natively;
-routers recognise and forward IPv4 packets and will continue to
-do so. What this document changes is solely how the host resolves
-the link-layer next-hop for the first hop.
-
-Networks transitioning to IPv6-only segments still need to carry
-IPv4 traffic for dual-stack hosts. Traditional mechanisms such as
-dual-stack, tunneling, and translation all reintroduce IPv4 at
-the infrastructure level. This document defines a sentinel
-IPv4 address, `192.0.0.11`, that signals to a host stack that
-link-layer resolution for the IPv4 default gateway is derived
-from the link-layer address entry for the IPv6 default router in
-the neighbor cache {{RFC4861}}, rather than via ARP. The IPv4
-routing table entry is unchanged; only the next-hop resolution
-path is modified. This eliminates the need for IPv4 subnets and
-ARP on the local segment, removing the requirement for tunneling
-or translation at the first hop.
-
-This problem is already being solved in production, but
-inconsistently. Hosting providers including Hetzner, OVH, and
-Scaleway independently deploy /32 host addresses with off-link
-IPv4 gateways using per-OS workarounds (Linux pointopoint, netplan
-on-link: true, explicit post-up routes). None of this is
-documented in any RFC, and the implementations are not
-interoperable across providers. This draft standardises the
-pattern with a single sentinel address that host stacks can
-implement natively. Alternative
-approaches (a new DHCPv4 option, or implicit behaviour when
-no router is specified) would both require DHCPv4 client
-changes across every OS implementation; given typical
-deployment timescales, meaningful coverage would take a decade
-at best. The sentinel address approach requires no changes to
-DHCPv4 clients or servers and is incrementally deployable
-today.
-
-The mechanism has been verified to work without changes to
-applications or DHCPv4 configuration on Windows 11, macOS,
-Android, iOS, Linux, FreeBSD, and ChromeOS.
-
-This document addresses the host-side first-hop gap left open
-by {{I-D.ietf-intarea-v4-via-v6}}, which defines router-to-router
-forwarding of IPv4 traffic over IPv6 next-hops. Together, the
-two documents provide a complete solution: hosts reach their
-first-hop router without ARP, and routers forward IPv4 traffic
-across an IPv6-only infrastructure without IPv4 addresses on
-any router interface.
+Networks migrating to IPv6-only infrastructure still need to carry
+IPv4 traffic. Traditional mechanisms such as dual-stack, tunneling,
+and translation all reintroduce IPv4 at the infrastructure level.
+This document defines a special-purpose IPv4 address, `192.0.0.11`,
+that signals to a host stack that link-layer resolution for the
+IPv4 default gateway is derived from the link-layer address entry
+for the IPv6 default router in the neighbor cache {{RFC4861}},
+rather than via ARP. The IPv4 routing table entry is unchanged;
+only the ARP resolution path is modified. This eliminates the
+need for IPv4 subnets and ARP on the local segment, removing
+the requirement for tunneling or translation at the first hop.
 
 # Conventions and Definitions
 
@@ -121,37 +71,14 @@ any router interface.
 
 IPv4 next-hop resolution on a local link depends on ARP, which
 requires an IPv4 subnet to be configured on the link. In an
-IPv6-only segment, no such subnet exists. Existing solutions
+IPv6-only network, no such subnet exists. Existing solutions
 -- dual-stack, tunneling, and translation-based approaches
 such as NAT64 -- generally require changes beyond the local
 segment. This document closes the first-hop resolution gap
-for dual-stack hosts on IPv6-only segments without requiring
-changes to host software, packet formats, or DHCPv4 clients.
+for IPv4 hosts on IPv6-only segments without requiring changes
+to host software, packet formats, or DHCPv4 clients.
 
 # Host Behavior and Next-Hop Resolution
-
-This mechanism activates only when a functional IPv6
-implementation is present on the same interface, sufficient
-to perform Neighbor Discovery per {{RFC4861}} and process
-Router Advertisements. Without IPv6 on the interface, the
-sentinel address has no effect and the host continues to
-behave as if no gateway were configured.
-
-For the outbound path, link-local IPv6 operation is sufficient.
-For return traffic to reach the host via the
-{{I-D.ietf-intarea-v4-via-v6}} forwarding model, the first-hop
-router must advertise the host's /32 route with a routable IPv6
-next-hop (GUA or ULA); a link-local address is not valid as an
-inter-router next-hop. Operators deploying this mechanism in
-conjunction with {{I-D.ietf-intarea-v4-via-v6}} MUST therefore
-ensure the host has a routable IPv6 address on the interface.
-
-A host implementing this mechanism SHOULD be configured with a
-/32 prefix length for its IPv4 address. With a broader prefix,
-the host will continue to ARP for addresses it considers on-link,
-defeating the purpose of the mechanism for local segment traffic.
-A /32 ensures all IPv4 traffic is directed to the first-hop router
-via the sentinel, with no on-link ARP possible.
 
 When a host is configured to use `192.0.0.11` as its IPv4 default
 gateway, the host's operating system MUST implement the following
@@ -179,12 +106,10 @@ logic:
    SHOULD be sent to that address. For behavior prior to
    first RA reception, see the startup paragraph below.
 
-Host stacks MUST treat `192.0.0.11` as a sentinel address
-signalling that IPv6-based next-hop resolution is to be used,
-regardless of other address configuration on the interface.
-This behavior is unconditional and not dependent on any
-additional signaling.
-
+Host stacks MUST treat `192.0.0.11` as a reserved address
+requiring IPv6-based next-hop resolution, regardless of other
+address configuration on the interface. This behavior is
+unconditional and not dependent on any additional signaling.
 When a DHCPv4 lease configuring `192.0.0.11` expires and
 is not renewed, the host SHOULD remove `192.0.0.11` as the
 IPv4 default gateway and cease IPv6-based resolution on that
@@ -312,10 +237,8 @@ No ARP is exchanged at any point.
 ## Router Ingress Behavior
 
 Routers MUST treat `192.0.0.11` as an interface-scoped
-address, valid only on the interface on which it is
+address -- valid only on the interface on which it is
 configured, and only for locally-terminated traffic.
-`192.0.0.11` does not appear in IPv4 fragment headers;
-fragmentation behavior is unchanged by this mechanism.
 Specifically:
 
 - It MUST NOT be injected into any routing protocol.
@@ -336,9 +259,7 @@ scope; see {{RFC7600}}.
 The use of `192.0.0.11` as the DHCPv4 Router Option (Option 3)
 value is fully conformant with {{RFC2132}}, which imposes no
 requirement that the router address be reachable via ARP on
-the same subnet. Unlike {{RFC1027}} (proxy ARP), the router
-is not proxying for a remote host; it owns this address on
-the interface for the purpose of link-layer reachability.
+the same subnet.
 
 Unmodified hosts receiving `192.0.0.11` as their IPv4 default
 gateway will issue an ARP request for it. A router SHOULD respond
@@ -360,12 +281,6 @@ behavior is triggered only by unmodified hosts.
 
 # Deployment Considerations
 
-This mechanism applies granularly at the segment level. A network
-may contain a mix of IPv4-only, dual-stack, and IPv6-only
-segments; this mechanism is applicable specifically to IPv6-only
-segments carrying dual-stack hosts and does not affect other
-segment types.
-
 This mechanism complements {{RFC8925}} (IPv6-Only Preferred
 Option). RFC 8925 allows hosts to signal a preference for
 IPv6-only operation, but operators must still provide IPv4
@@ -377,52 +292,28 @@ that receives Option 108 and transitions to IPv6-only
 operation retains functional IPv4 connectivity via
 `192.0.0.11` without any additional configuration.
 
-This mechanism fits within the IPv6-mostly network deployment
-model described in {{I-D.ietf-v6ops-6mops}}, specifically
-the case where native IPv4 connectivity is provided to
-dual-stack hosts on an IPv6-only segment.
-
-CLAT {{I-D.ietf-v6ops-claton}} provides an alternative approach
-to IPv4 connectivity via translation. CLAT notes that a CLAT
-function SHOULD be disabled when native IPv4 connectivity is
-available; this mechanism provides exactly that native
-connectivity, making CLAT unnecessary on segments where it
-is deployed.
-
-Hosts without a functional IPv6 implementation on the relevant
-interface cannot perform Neighbor Discovery and are outside
-the scope of this document.
+Hosts without an IPv6 stack are outside the scope of this
+document.
 
 On segments with multiple routers advertising equal Default
-Router Preference (common in datacenter ECMP fabrics), hosts
+Router Preference -- common in datacenter ECMP fabrics -- hosts
 may make inconsistent router selections based on RA timing.
 Operators SHOULD configure explicit Default Router Preference
 values per {{RFC4191}} to ensure deterministic behavior.
 
 Implementations in which IPv4 and IPv6 stacks are managed by
-separate processes (as is common on mobile operating systems)
+separate processes -- as is common on mobile operating systems --
 will require inter-process communication to expose the IPv6
 neighbor cache to the IPv4 forwarding path. This is an
 implementation consideration and does not affect the on-wire
 behavior defined in this document.
 
-DHCPv4 relay agents that enforce on-link gateway validation
-may reject or flag `192.0.0.11` as an invalid router option.
-Operators SHOULD verify relay agent behavior in their
-deployment before relying on this mechanism.
-
 # Security Considerations
 
-## ARP Attack Surface Reduction
-
 In the updated-host deployment model, ARP is eliminated from the
-segment entirely. In the unmodified-host model, ARP is constrained
-to the sentinel address from a known source (the first-hop
-router), eliminating the class of ARP-based network reconnaissance
-and spoofing attacks that are possible in conventional subnet
-deployments. Broadcast traffic is reduced to a single predictable
-ARP exchange per unmodified host at startup, compared to
-continuous ARP traffic across a conventional subnet.
+network entirely. In the unmodified-host model, ARP is constrained
+to a single well-known address, reducing the ARP attack surface
+relative to conventional dual-stack networks.
 
 The mechanism relies on the integrity of IPv6 Neighbor Discovery.
 Rogue RA risks apply as in any IPv6 deployment and can be
@@ -444,50 +335,14 @@ configuration per {{RFC3927}}. A host configured with
 address will follow the same resolution logic defined in
 Section 4 (Host Behavior and Next-Hop Resolution).
 
-## Universal Gateway Address
-
-A consequence of the IANA allocation and the ARP behavior
-defined in Section 5.3 is that `192.0.0.11` can serve as a
-topology-independent gateway address in any deployment where
-routers respond to ARP for it, not limited to IPv6-only
-segments. This document does not specify or require this
-behavior in IPv4-only deployments; it is an emergent property
-of the allocation.
-
-In segments where routers respond to ARP for `192.0.0.11`,
-it functions as a universal gateway address. Unlike a
-conventional per-subnet gateway address, it does not reveal
-network topology and carries no subnet membership information.
-ARP cache poisoning of `192.0.0.11` is less valuable than
-poisoning a conventional gateway address, as it carries no
-topological information for an attacker to exploit; it can
-only redirect local-segment traffic, mitigated by dynamic ARP
-inspection. Rogue RA attacks achieve the same redirection and
-are mitigated by RA Guard {{RFC6105}}.
-
-As `192.0.0.11` MUST NOT appear as source or destination in
-any forwarded packet per Section 5.2, conformant deployments
-render it unreachable from any device not on the local segment.
-This eliminates it as a target for off-link attacks. As
-Source=False in the IANA registry (see IANA Considerations),
-no conformant off-link device will originate packets with
-`192.0.0.11` as source, precluding volumetric attacks using
-this address.
-
-IPv6 has long used specific link-local addresses (fe80::) as
-next-hop addresses, topology-independent identifiers that
-work on any segment without carrying subnet membership
-information. `192.0.0.11` provides the same property for IPv4.
-
 # Implementation Requirements
 
-An implementation is conformant if it satisfies all MUST
-and MUST NOT requirements in Sections 4 and 5.
-
-A reference implementation in Linux userspace is available
-at https://github.com/remcovanmook/v4-with-v6-nh.
-A full conformance test suite will be documented prior to
-IETF Last Call.
+[PLACEHOLDER: This section will document conformance
+requirements and reference known implementations prior
+to IETF Last Call. An implementation is conformant if
+it satisfies all MUST and MUST NOT requirements in
+Sections 4 and 5. A reference implementation is
+available at https://github.com/remcovanmook/v4-with-v6-nh.]
 
 # IANA Considerations
 
@@ -518,8 +373,4 @@ address beyond the local link.
 
 # Acknowledgements
 
-The author thanks Tobias Fiebig, Warren Kumari, Jen Linkova,
-David Lamparter, and Jordi Palet Martinez for their feedback
-and review. An earlier version of this work was presented as
-a lightning talk at RIPE 91 in Bucharest (October 2025) and
-at IETF 124 in Montreal (November 2025).
+The author thanks Tobias Fiebig, Warren Kumari, and Jen Linkova.
