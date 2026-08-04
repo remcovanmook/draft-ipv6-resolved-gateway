@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-08-02T01:43:34.222805+00:00",
+  "timestamp": "2026-08-04T01:21:47.448716+00:00",
   "repo": "remcovanmook/draft-ipv6-resolved-gateway",
   "labels": [
     {
@@ -47,9 +47,583 @@
       "name": "wontfix",
       "description": "This will not be worked on",
       "color": "ffffff"
+    },
+    {
+      "name": "wg-00",
+      "description": "",
+      "color": "d73a4a"
+    },
+    {
+      "name": "deployment-considerations",
+      "description": "",
+      "color": "0e8a16"
+    },
+    {
+      "name": "introduction",
+      "description": "",
+      "color": "1d76db"
+    },
+    {
+      "name": "normative",
+      "description": "",
+      "color": "b60205"
+    },
+    {
+      "name": "editorial",
+      "description": "",
+      "color": "c5def5"
+    },
+    {
+      "name": "security",
+      "description": "",
+      "color": "5319e7"
+    },
+    {
+      "name": "companion-draft",
+      "description": "",
+      "color": "fbca04"
+    },
+    {
+      "name": "process",
+      "description": "",
+      "color": "bfdadc"
     }
   ],
-  "issues": [],
+  "issues": [
+    {
+      "number": 2,
+      "id": "I_kwDOPzmSBc8AAAABLPixJQ",
+      "title": "Replace concrete sentinel address with IPV4-SENTINEL (TBD1) throughout normative text",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/2",
+      "state": "OPEN",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "wg-00",
+        "normative"
+      ],
+      "body": "Per AD guidance at IETF 126: normative text uses a symbolic name with a TBD placeholder. IANA Considerations requests one IPv4 address from 192.0.0.0/24 and suggests 192.0.0.11. Examples and figures move to 192.0.2.11 (RFC 5737 documentation space). Blocking for IESG review; do first in the WG -00.",
+      "createdAt": "2026-08-03T11:51:28Z",
+      "updatedAt": "2026-08-03T11:51:28Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 3,
+      "id": "I_kwDOPzmSBc8AAAABLPixtg",
+      "title": "Section 5: router-to-host binding durability requirement (one paragraph)",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/3",
+      "state": "OPEN",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "wg-00",
+        "normative"
+      ],
+      "body": "Add a single normative requirement: the first-hop router MUST maintain, for the lease lifetime, the ability to deliver to each /32 without depending on opportunistic neighbour-cache state. This prohibits the failure mode where an opportunistically learned MAC-to-IPv6 mapping is garbage collected and connectivity never recovers. Mechanisms stay out of this document (see companion draft issue). Raised in post-session design discussion.",
+      "createdAt": "2026-08-03T11:51:29Z",
+      "updatedAt": "2026-08-03T11:51:29Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 4,
+      "id": "I_kwDOPzmSBc8AAAABLPiyTw",
+      "title": "Section 5.3: ARP responder is operator-controlled migration machinery",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/4",
+      "state": "OPEN",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "wg-00",
+        "normative"
+      ],
+      "body": "State explicitly that the router ARP responder exists for the migration period: enabled while unmodified hosts remain on the segment, disabled by the operator thereafter. A fully migrated segment is genuinely zero-ARP, responder included. Related design position: Section 4's MUST NOT stays strict; no host-side ARP fallback (a sanctioned fallback would make the responder unretirable from any segment, foreclosing the zero-ARP end state).",
+      "createdAt": "2026-08-03T11:51:30Z",
+      "updatedAt": "2026-08-03T11:51:30Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 5,
+      "id": "I_kwDOPzmSBc8AAAABLPiy1A",
+      "title": "Section 4: multi-homing exposition",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/5",
+      "state": "OPEN",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "wg-00"
+      ],
+      "body": "Adoption-call review (H. Robinson) showed the semantics are right but the exposition is poor. Explain the sentinel as an interface-scoped next-hop token; show the (prefix, interface, via-sentinel) route form; note that DHCPv4 already expresses this on both sides (per-interface Option 3 default plus Option 121 classless routes), demonstrated in the implementations repo; source selection follows the egress interface as today. Robinson's algorithm walkthrough in the call thread is raw material.",
+      "createdAt": "2026-08-03T11:51:32Z",
+      "updatedAt": "2026-08-03T11:51:32Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 6,
+      "id": "I_kwDOPzmSBc8AAAABLPizhw",
+      "title": "Section 5: scope the ICMP redirect mention",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/6",
+      "state": "OPEN",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "wg-00"
+      ],
+      "body": "Redirects cannot express (destination, interface, sentinel) on multi-homed hosts, are operationally moribund, and are not needed: multi-router steering lives in RA preferences (RFC 4191). Rescope or remove the existing redirect sentence; state that redirects are not relied upon.",
+      "createdAt": "2026-08-03T11:51:33Z",
+      "updatedAt": "2026-08-03T11:51:33Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 7,
+      "id": "I_kwDOPzmSBc8AAAABLPi0Ig",
+      "title": "Section 7: correct the off-link property basis (erratum from -01)",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/7",
+      "state": "OPEN",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "wg-00",
+        "security"
+      ],
+      "body": "The -01 Universal Gateway Address text derives off-link unreachability from Source=False; the correct basis is the Section 5.2 forwarding prohibition (the IANA table was always right: Source=True). Flagged at the IETF 126 session.",
+      "createdAt": "2026-08-03T11:51:34Z",
+      "updatedAt": "2026-08-03T11:51:34Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 8,
+      "id": "I_kwDOPzmSBc8AAAABLPi00w",
+      "title": "Introduction: 'DHCPv4 configuration' -> 'DHCPv4 client configuration'",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/8",
+      "state": "OPEN",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "wg-00",
+        "editorial"
+      ],
+      "body": "From adoption-call review (H. Robinson).",
+      "createdAt": "2026-08-03T11:51:36Z",
+      "updatedAt": "2026-08-03T11:51:36Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 9,
+      "id": "I_kwDOPzmSBc8AAAABLPi1cQ",
+      "title": "References: add pointer to the live IANA IPv4 Special-Purpose Address Registry",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/9",
+      "state": "OPEN",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "wg-00",
+        "editorial"
+      ],
+      "body": "Alongside the RFC 6890 citation. From adoption-call review (T. Petch).",
+      "createdAt": "2026-08-03T11:51:37Z",
+      "updatedAt": "2026-08-03T11:51:37Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 10,
+      "id": "I_kwDOPzmSBc8AAAABLPi2Bw",
+      "title": "Introduction: add no-flag-day sentence",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/10",
+      "state": "OPEN",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "wg-00",
+        "introduction"
+      ],
+      "body": "Add: 'There is no flag day or mandatory switch-over point.' to close the incremental deployment argument.",
+      "createdAt": "2026-08-03T11:51:38Z",
+      "updatedAt": "2026-08-03T11:51:38Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 11,
+      "id": "I_kwDOPzmSBc8AAAABLPi2kw",
+      "title": "Introduction: OSS/BSS ecosystem argument for the sentinel",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/11",
+      "state": "OPEN",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "wg-00",
+        "introduction"
+      ],
+      "body": "A new DHCPv4 option requires changes across billing, provisioning, monitoring, NOC tooling and validation logic that encode the shape of an IPv4 gateway. The sentinel looks exactly like a valid gateway address to every existing system; the only place that needs to know is the host. Add to the alternatives discussion in the Introduction.",
+      "createdAt": "2026-08-03T11:51:39Z",
+      "updatedAt": "2026-08-03T11:51:39Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 12,
+      "id": "I_kwDOPzmSBc8AAAABLPi3Lg",
+      "title": "Introduction rework: two-IPv4s framing and the layer cake",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/12",
+      "state": "OPEN",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "wg-00",
+        "introduction"
+      ],
+      "body": "Rework the Introduction around: (1) the internet-v4 vs local-network-v4 distinction (demand is off-link, architecture is on-link); (2) the dependency stack: subnet -> ARP -> FHRP -> carved pools -> IPv4 host, with the policing apparatus as side-stratum; (3) the demolition: /32 IS subnet deletion (what Hetzner/OVH/Scaleway did), sentinel deletes ARP's last job, FHRP loses its object, pools flatten; (4) precedents: RFC 3021 /31 lineage, VPN /32s (every OS runs subnet-less IPv4 on tunnel interfaces daily), 1982-isolation-assumption history (ARP designed alone on the wire, never revisited when IPv6 arrived). Segment tiering: access/hosting (no lateral v4), enterprise (auditable lateral v4, enclave-able), home WiFi (unauditable, out of scope). Candidate figure: before/after layer cake. See the published RIPE Labs articles for the worked prose.",
+      "createdAt": "2026-08-03T11:51:41Z",
+      "updatedAt": "2026-08-03T11:51:41Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 13,
+      "id": "I_kwDOPzmSBc8AAAABLPi3xw",
+      "title": "DC: ND operational-health prerequisites",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/13",
+      "state": "OPEN",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "wg-00",
+        "deployment-considerations"
+      ],
+      "body": "The mechanism inherits ND's operational prerequisites: icmp6 permitted on host firewalls, functioning MLD snooping / multicast forwarding, no MAC filtering of solicited-node groups. Already prerequisites for IPv6 service on the segment; state them explicitly. From list review.",
+      "createdAt": "2026-08-03T11:51:42Z",
+      "updatedAt": "2026-08-03T11:51:42Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 14,
+      "id": "I_kwDOPzmSBc8AAAABLPi41w",
+      "title": "DC: east-west hairpinning cost and topology dependence",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/14",
+      "state": "OPEN",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "wg-00",
+        "deployment-considerations"
+      ],
+      "body": "The /32 model prices intra-segment IPv4 as a routed service. Cost is topology-dependent: on an L3 access switch the hairpinned path crosses the identical links as the switched path (zero extra wire cost, line rate); the double-traffic case is router-on-a-stick behind shared L2. Guidance: lead segments round to zero (lateral suppressed/absent or L3 access); genuinely east-west-heavy legacy shared-L2 segments should not opt in -- stay dual-stack or move that traffic to IPv6 first. From article review (A. Prado) with topology refinement from the adoption-call thread.",
+      "createdAt": "2026-08-03T11:51:43Z",
+      "updatedAt": "2026-08-03T11:51:43Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 15,
+      "id": "I_kwDOPzmSBc8AAAABLPi5jA",
+      "title": "DC: L2 integrity feature validation (snooping/DAI/IPSG)",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/15",
+      "state": "OPEN",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "wg-00",
+        "deployment-considerations"
+      ],
+      "body": "These features were written against subnet-and-binding assumptions; behaviour with an off-subnet gateway and /32 leases must be validated per platform. Textbook analysis: first-hop router sits on a DAI-trusted port, so the sentinel reply passes unchanged; host ARP requests validate against the sender binding (which the /32 lease provides); IPSG sees the leased address. Cover the residue: routers on untrusted ports, vendor variance on target/gratuitous-ARP inspection, bindings machinery beyond the classic trio. One static universal permit where needed. End state: apparatus unnecessary for IPv4 once the ARP tier is off. From article review (A. Prado).",
+      "createdAt": "2026-08-03T11:51:45Z",
+      "updatedAt": "2026-08-03T11:51:45Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 16,
+      "id": "I_kwDOPzmSBc8AAAABLPi6Lw",
+      "title": "DC: new subsection 'Multiple gateways and redundancy'",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/16",
+      "state": "OPEN",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "wg-00",
+        "deployment-considerations"
+      ],
+      "body": "The sentinel behaves anycast-like where it counts (not anycast in the technical sense): resolved from the neighbour cache, never ARP-elected, so any number of routers can hold it with zero coordination; the requirement reduces to distinct IPv6 identities. Precision: this holds for the updated tier; unmodified hosts ARP and multiple routers answer last-reply-wins (benign nondeterminism; conventional FHRP remains available for the ARP tier where determinism is wanted). Every selectable router MUST forward IPv4 with an 8950 return path; steer via RFC 4191 where not all qualify. ECMP corollary: with correct route propagation every router originates each host /32, so return traffic is active-active by standard routing machinery; two independent healing planes (downstream at IGP convergence, upstream at RA/NUD pace). Caveat: stateful functions on segment routers inherit standard ECMP-asymmetry considerations. Explicit failover-MAC sentence: updated hosts elect nothing; unmodified hosts either accept re-ARP timing or run VRRP in front of the ARP tier. FHRP consumer taxonomy available for rationale: gateways and floating service VIPs are both 'an address that must appear on-link while its owner may change'; the /32 model moves the second to route origination (conditional origination from the active member for stateful pairs).",
+      "createdAt": "2026-08-03T11:51:46Z",
+      "updatedAt": "2026-08-03T11:51:46Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 17,
+      "id": "I_kwDOPzmSBc8AAAABLPi6tQ",
+      "title": "DC: failover pacing, planned and unplanned",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/17",
+      "state": "OPEN",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "wg-00",
+        "deployment-considerations"
+      ],
+      "body": "IPv4 first-hop failover is paced by IPv6 default-router selection; no IPv4-specific latency. Planned decommission: final RA with Lifetime 0 (RFC 4861 s6.2.5) -- an operator requirement for RA daemon shutdown. Unplanned: NUD is traffic-driven; with active flows, DELAY/PROBE/FAILED and next-router selection in single-digit seconds (VRRP-default class); idle paths age out on lifetime by design; sub-second targets remain engineered (BFD class) exactly as with VRRP. Per-stack nuance: closed-platform realizations inherit the OS's NUD outcome. Note: DHCPv4 renew/release does not affect next-hop selection (empirically confirmed).",
+      "createdAt": "2026-08-03T11:51:47Z",
+      "updatedAt": "2026-08-03T11:51:47Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 18,
+      "id": "I_kwDOPzmSBc8AAAABLPi7Mw",
+      "title": "Section 7: inspection collapse and FHRP attack surface",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/18",
+      "state": "OPEN",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "wg-00",
+        "security"
+      ],
+      "body": "(1) On a deployed segment the first-hop router is the only legitimate ARP responder; ARP inspection policy reduces to permitting replies solely from router ports, no snooping or per-host binding table required; host impersonation moves entirely to ND where RA Guard / ND inspection apply -- one protection stack for one resolution protocol. (2) Eliminating FHRP eliminates the FHRP attack surface: VRRP/HSRP spoofing and election manipulation cease to exist on sentinel segments.",
+      "createdAt": "2026-08-03T11:51:48Z",
+      "updatedAt": "2026-08-03T11:51:48Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 19,
+      "id": "I_kwDOPzmSBc8AAAABLPi7uQ",
+      "title": "DC: reword the CLAT paragraph",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/19",
+      "state": "OPEN",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "wg-00",
+        "deployment-considerations"
+      ],
+      "body": "Make the demand-profile distinction explicit: CLAT provides outbound IPv4 via a shared PLAT pool (address sharing is the point); this mechanism provides a per-host routable IPv4 endpoint identity (per-host address is the point); not alternatives for the same host. Keep the claton interaction (CLAT disables when native IPv4 is available; the sentinel provides that trigger via ordinary DHCPv4). Drop or scope 'making CLAT unnecessary'. Optionally note the /32 need not be public: RFC 1918 /32s with edge NAT work unchanged on client segments. From list review.",
+      "createdAt": "2026-08-03T11:51:49Z",
+      "updatedAt": "2026-08-03T11:51:49Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 20,
+      "id": "I_kwDOPzmSBc8AAAABLPi8Og",
+      "title": "DC: access-provider base case (FTTH/DOCSIS/WiFi/FWA)",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/20",
+      "state": "OPEN",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "wg-00",
+        "deployment-considerations"
+      ],
+      "body": "Single public IPv4 per subscriber over an IPv6-only access network: no per-service-area carving, no gateway/broadcast overhead, no ARP at MAC-domain scale, flat pools (any /32 anywhere; nothing stranded by subnet sizing). Per-subscriber service differentiation falls out of the model: one segment serves public-IPv4, CGN-space and v6-only subscribers, distinguished purely in DHCP provisioning. Include FWA: same per-subscriber /32 story over the mobile operator's v6-only transport; converged operators get one v4-service architecture across FTTH, DOCSIS, WiFi and FWA, with 464XLAT remaining the handset answer.",
+      "createdAt": "2026-08-03T11:51:51Z",
+      "updatedAt": "2026-08-03T11:51:51Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 21,
+      "id": "I_kwDOPzmSBc8AAAABLPi8ww",
+      "title": "DC: DHCPv4 relay note",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/21",
+      "state": "OPEN",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "wg-00",
+        "deployment-considerations"
+      ],
+      "body": "Relaying interface needs no IPv4 address; giaddr requires a routable IPv4 address (one loopback per relay router suffices); RFC 3527 link-selection decouples giaddr from pool selection where needed; flat /32 pools largely dissolve pool selection (Option 82 circuit-id where segment identity is wanted). Cross-reference 192.0.0.8/32 (RFC 7600) for transit ICMPv4 sourcing alongside the 5.2 on-link sourcing. From article review.",
+      "createdAt": "2026-08-03T11:51:52Z",
+      "updatedAt": "2026-08-03T11:51:52Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 22,
+      "id": "I_kwDOPzmSBc8AAAABLPi9VA",
+      "title": "DC: return-path route origination, one informative sentence",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/22",
+      "state": "OPEN",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "wg-00",
+        "deployment-considerations"
+      ],
+      "body": "Note lease-triggered origination as existing practice: the first-hop router is (or snoops) the DHCPv4 relay, lease binding plus ND link-local, originates the RFC 8950 route, as BNGs do for subscriber routes today. Illustration only; route origination belongs to RFC 8950 / v4-via-v6 territory. Normative text unchanged.",
+      "createdAt": "2026-08-03T11:51:53Z",
+      "updatedAt": "2026-08-03T11:51:53Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 23,
+      "id": "I_kwDOPzmSBc8AAAABLPi-iA",
+      "title": "DC: return-path next-hop identity (stability under privacy addressing)",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/23",
+      "state": "OPEN",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "wg-00",
+        "deployment-considerations"
+      ],
+      "body": "Link-locals are shifting identifiers under modern privacy addressing (observed: dhcpcd moving EUI-64 to RFC 7217 mid-negotiation); return routes keyed to first-seen LL go stale during bring-up. Guidance: prefer a stable next-hop identity -- provider-known GUA, PD-anchored address, or SAVI/ND-snooping-derived binding (RFC 7513) -- with LL fallback; where only LLs are available, origination must track identity shifts via ND. Caveats: RFC 8981 temporaries rotate GUAs (servers keep use_tempaddr=0). Testbed mechanisms in the implementations repo (v4gw-lease.sh) demonstrate the GUA-preference and resolved-entries-only patterns.",
+      "createdAt": "2026-08-03T11:51:54Z",
+      "updatedAt": "2026-08-03T11:51:54Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 24,
+      "id": "I_kwDOPzmSBc8AAAABLPi_GA",
+      "title": "Related work: reinvention lineage note",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/24",
+      "state": "OPEN",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "wg-00"
+      ],
+      "body": "The pattern has been independently reinvented repeatedly: proxy ARP (RFC 925), 3GPP bearers, PPPoE/BRAS, the softwires IPv4aaS family (RFC 8585), container networking's static-ARP fake-gateway pattern (VERIFY Calico 169.254.1.1 details before citing), provider /32 hacks, route4via6. Each prior instance was blocked by a since-expired condition: no native transport (8950), unchangeable host stacks (Option 108/CLAT shipping disproved this), walled domains, transition orthodoxy. Position the draft as the first arrival after the blockers fell.",
+      "createdAt": "2026-08-03T11:51:56Z",
+      "updatedAt": "2026-08-03T11:51:56Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 25,
+      "id": "I_kwDOPzmSBc8AAAABLPi_vQ",
+      "title": "Consider: alternatives-considered appendix",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/25",
+      "state": "OPEN",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "wg-00"
+      ],
+      "body": "Candidate appendix covering rejected designs with reasons: new DHCPv4 option (no coexistence tier; ecosystem shape change); IPv4 link-local next-hops (classic resolution keeps ARP; token variant collides with RFC 3927 self-assignment; per-router LLs reintroduce election); DHCPv6-PD-based IPv4 provisioning (restarts the client clock; IPv4 OSS/BSS learns DHCPv6); pure static / provider hacks (the gap itself). Status: under consideration, not committed.",
+      "createdAt": "2026-08-03T11:51:57Z",
+      "updatedAt": "2026-08-03T11:51:57Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 26,
+      "id": "I_kwDOPzmSBc8AAAABLPjANw",
+      "title": "Companion informational draft: router-to-host configurations (skeleton)",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/26",
+      "state": "OPEN",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "companion-draft"
+      ],
+      "body": "New informational I-D cataloguing acceptable router-to-host configurations under the Section 5 durability requirement: (a) lease-derived static entries in both directions; (b) lease-provoked ND (construct-and-ping the host GUA from DHCP state); (c) orchestrated / route-reflector-fed; (d) PD-anchored identity. Plus per-segment-type recipes (datacenter, access/BNG, enterprise), the dnsmasq/testbed configuration appendix, and conditional-origination patterns for stateful service pairs. All core mechanisms already implemented in the implementations repo. First task: title, abstract, section skeleton.",
+      "createdAt": "2026-08-03T11:51:58Z",
+      "updatedAt": "2026-08-03T11:51:58Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 27,
+      "id": "I_kwDOPzmSBc8AAAABLPjAtg",
+      "title": "Post-adoption: RFC 7120 early allocation request",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/27",
+      "state": "OPEN",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "process"
+      ],
+      "body": "File for early allocation of the sentinel address (requires WG adoption, chairs, AD approval) so the code point is assigned ahead of IESG review and deployed implementations stay aligned with the registry. Raise with the chairs when the adoption call concludes.",
+      "createdAt": "2026-08-03T11:51:59Z",
+      "updatedAt": "2026-08-03T11:51:59Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 28,
+      "id": "I_kwDOPzmSBc8AAAABLPjBTQ",
+      "title": "Monitor: IPv6-Only terminology alignment",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/28",
+      "state": "OPEN",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "process"
+      ],
+      "body": "Track draft-palet-v6ops-ipv6-only for IPv6-Only-Strict terminology; align our segment terminology if it advances.",
+      "createdAt": "2026-08-03T11:52:00Z",
+      "updatedAt": "2026-08-03T11:52:00Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 29,
+      "id": "I_kwDOPzmSBc8AAAABLPyuXA",
+      "title": "Router-to-host implementation considerations.",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/29",
+      "state": "CLOSED",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "wg-00",
+        "companion-draft"
+      ],
+      "body": "Could be an informational companion or a short chapter in this draft - previously left out in the assumption that v4-via-v6 would clear all of that.",
+      "createdAt": "2026-08-03T12:21:03Z",
+      "updatedAt": "2026-08-03T12:22:16Z",
+      "closedAt": "2026-08-03T12:22:16Z",
+      "comments": [
+        {
+          "author": "remcovanmook",
+          "authorAssociation": "OWNER",
+          "body": "Belongs to #26 really. We'll see where the text ends up",
+          "createdAt": "2026-08-03T12:22:16Z",
+          "updatedAt": "2026-08-03T12:22:16Z"
+        }
+      ]
+    }
+  ],
   "pulls": [
     {
       "number": 1,
