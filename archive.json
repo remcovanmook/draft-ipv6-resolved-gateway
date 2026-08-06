@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-08-04T01:21:47.448716+00:00",
+  "timestamp": "2026-08-06T01:24:25.262379+00:00",
   "repo": "remcovanmook/draft-ipv6-resolved-gateway",
   "labels": [
     {
@@ -622,6 +622,25 @@
           "updatedAt": "2026-08-03T12:22:16Z"
         }
       ]
+    },
+    {
+      "number": 30,
+      "id": "I_kwDOPzmSBc8AAAABLiverQ",
+      "title": "Abstract: state the DHCPv4 provisioning step explicitly",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/30",
+      "state": "OPEN",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "wg-00",
+        "editorial"
+      ],
+      "body": "Abstract currently implies provisioning ('Hosts that receive...'); make the two steps explicit: hosts are provisioned through ordinary, unmodified DHCPv4 (typically; static config also in scope), and the sentinel value changes only the resolution step. From article review (H. Kramselund).",
+      "createdAt": "2026-08-05T09:48:05Z",
+      "updatedAt": "2026-08-05T09:48:05Z",
+      "closedAt": null,
+      "comments": []
     }
   ],
   "pulls": [
