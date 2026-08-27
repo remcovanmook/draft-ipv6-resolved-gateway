@@ -1,18 +1,24 @@
 ---
 title: IPv6-Resolved IPv4 Gateway
 abbrev: IPv6-Resolved IPv4 GW
-docname: draft-vanmook-intarea-ipv6-resolved-gateway-latest
-date: 2026-06-27
+docname: draft-ietf-intarea-ipv6-resolved-gateway-latest
+date: 2026-08-27
 category: std
 ipr: trust200902
-workgroup: intarea
+area: "Internet"
+workgroup: "Internet Area Working Group"
 submissiontype: IETF
 consensus: true
 v: 3
 keyword: Internet-Draft
 
 venue:
+  group: "Internet Area"
+  type: "Working Group"
+  mail: "int-area@ietf.org"
+  arch: "https://mailarchive.ietf.org/arch/browse/int-area/"
   github: "remcovanmook/draft-ipv6-resolved-gateway"
+  latest: "https://remcovanmook.github.io/draft-ipv6-resolved-gateway/draft-ietf-intarea-ipv6-resolved-gateway.html"
 
 stand_alone: yes
 pi: [toc, sortrefs, symrefs]

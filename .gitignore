@@ -18,7 +18,7 @@
 /versioned/
 Gemfile.lock
 archive.json
-draft-vanmook-intarea-ipv6-resolved-gateway.xml
+draft-ietf-intarea-ipv6-resolved-gateway.xml
 package-lock.json
 report.xml
 !requirements.txt

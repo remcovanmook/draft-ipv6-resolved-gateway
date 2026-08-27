@@ -2,12 +2,12 @@
 
 # IPv6-Resolved IPv4 Gateway
 
-This is the working area for the individual Internet-Draft, "IPv6-Resolved IPv4 Gateway".
+This is the working area for the IETF [INTAREA Working Group](https://datatracker.ietf.org/group/intarea/documents/) Internet-Draft, "IPv6-Resolved IPv4 Gateway".
 
-* [Editor's Copy](https://remcovanmook.github.io/draft-ipv6-resolved-gateway/#go.draft-vanmook-intarea-ipv6-resolved-gateway.html)
-* [Datatracker Page](https://datatracker.ietf.org/doc/draft-vanmook-intarea-ipv6-resolved-gateway)
-* [Individual Draft](https://datatracker.ietf.org/doc/html/draft-vanmook-intarea-ipv6-resolved-gateway)
-* [Compare Editor's Copy to Individual Draft](https://remcovanmook.github.io/draft-ipv6-resolved-gateway/#go.draft-vanmook-intarea-ipv6-resolved-gateway.diff)
+* [Editor's Copy](https://remcovanmook.github.io/draft-ipv6-resolved-gateway/#go.draft-ietf-intarea-ipv6-resolved-gateway.html)
+* [Datatracker Page](https://datatracker.ietf.org/doc/draft-ietf-intarea-ipv6-resolved-gateway)
+* [Working Group Draft](https://datatracker.ietf.org/doc/html/draft-ietf-intarea-ipv6-resolved-gateway)
+* [Compare Editor's Copy to Working Group Draft](https://remcovanmook.github.io/draft-ipv6-resolved-gateway/#go.draft-ietf-intarea-ipv6-resolved-gateway.diff)
 
 
 ## Contributing
