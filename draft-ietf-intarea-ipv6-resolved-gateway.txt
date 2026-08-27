@@ -2,14 +2,14 @@
 
 
 
-intarea                                                      R. van Mook
+Internet Area Working Group                                  R. van Mook
 Internet-Draft                               Asteroid International B.V.
-Intended status: Standards Track                            27 June 2026
-Expires: 29 December 2026
+Intended status: Standards Track                          27 August 2026
+Expires: 28 February 2027
 
 
                        IPv6-Resolved IPv4 Gateway
-           draft-vanmook-intarea-ipv6-resolved-gateway-latest
+            draft-ietf-intarea-ipv6-resolved-gateway-latest
 
 Abstract
 
@@ -28,9 +28,16 @@ About This Document
 
    This note is to be removed before publishing as an RFC.
 
-   Status information for this document may be found at
-   https://datatracker.ietf.org/doc/draft-vanmook-intarea-ipv6-resolved-
-   gateway/.
+   The latest revision of this draft can be found at
+   https://remcovanmook.github.io/draft-ipv6-resolved-gateway/draft-
+   ietf-intarea-ipv6-resolved-gateway.html.  Status information for this
+   document may be found at https://datatracker.ietf.org/doc/draft-ietf-
+   intarea-ipv6-resolved-gateway/.
+
+   Discussion of this document takes place on the Internet Area Working
+   Group mailing list (mailto:int-area@ietf.org), which is archived at
+   https://mailarchive.ietf.org/arch/browse/int-area/.  Subscribe at
+   https://www.ietf.org/mailman/listinfo/int-area/.
 
    Source for this draft and an issue tracker can be found at
    https://github.com/remcovanmook/draft-ipv6-resolved-gateway.
@@ -50,7 +57,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 29 December 2026.
+   This Internet-Draft will expire on 28 February 2027.
 
 Copyright Notice
 
@@ -585,9 +592,9 @@ Table of Contents
    [I-D.ietf-v6ops-6mops]
               Buraglio, N., Caletka, O., and J. Linkova, "IPv6-mostly
               Networks: Deployment and Operations Considerations", Work
-              in Progress, Internet-Draft, draft-ietf-v6ops-6mops-07, 2
-              March 2026, <https://datatracker.ietf.org/doc/html/draft-
-              ietf-v6ops-6mops-07>.
+              in Progress, Internet-Draft, draft-ietf-v6ops-6mops-09, 12
+              August 2026, <https://datatracker.ietf.org/doc/html/draft-
+              ietf-v6ops-6mops-09>.
 
    [I-D.ietf-v6ops-claton]
               Colitti, L., Linkova, J., and T. Jensen, "464XLAT
