@@ -725,13 +725,66 @@ responder has been retired, there is no ARP on the segment to
 inspect, and host impersonation is an ND concern met by
 ND-specific protections (see {{security-considerations}}).
 
-## Host Implementation Considerations
+## Multiple Gateways and Redundancy
 
-On segments with multiple routers advertising equal Default
-Router Preference (common in datacenter ECMP fabrics), hosts
-may make inconsistent router selections based on RA timing.
-Operators SHOULD configure explicit Default Router Preference
-values per {{RFC4191}} to ensure deterministic behavior.
+Because the sentinel is resolved from the neighbor cache and
+never by election, any number of routers on a segment may
+present it at the same time, with no coordination between them
+and no shared virtual address. Each updated host resolves the
+sentinel to whichever IPv6 default router it has itself
+selected. The requirement on the routers reduces to holding
+distinct IPv6 identities, which they must do in any case. The
+effect is anycast-like, though this is not anycast in the
+technical sense: one value, many holders, and selection made
+independently by each host.
+
+That holds for the updated tier. Unmodified hosts still ARP for
+the sentinel, and where more than one router answers, the last
+reply received wins. The resulting nondeterminism is benign,
+since every answering router is a valid first hop, but it is
+nondeterminism nonetheless; an operator who wants a determinate
+answer for the ARP tier can run a conventional FHRP in front of
+it. That choice affects unmodified hosts only.
+
+Every router a host may select MUST be able to forward that
+host's IPv4 traffic, and MUST have a return path for it per
+{{RFC8950}}. Where some routers on a segment qualify and others
+do not, operators MUST steer host selection with Default Router
+Preference {{RFC4191}}. On segments where several routers
+advertise equal preference, as is common in datacenter ECMP
+fabrics, hosts may select inconsistently according to RA timing;
+operators SHOULD set preferences explicitly wherever a
+deterministic outcome is wanted.
+
+Return traffic needs no additional machinery. Where route
+origination is configured correctly, every router on the segment
+originates a route to each host /32, and inbound traffic is
+distributed active-active by ordinary ECMP. The two directions
+heal independently: the downstream path converges at the pace of
+the routing protocol, and the upstream path at the pace of RA
+processing and Neighbor Unreachability Detection on the host.
+Operators running stateful functions on segment routers inherit
+the usual consequences of ECMP path asymmetry, and should apply
+the same measures they would in any other ECMP deployment.
+
+No failover MAC address is involved. An updated host elects
+nothing and inherits nothing; it follows its own IPv6 default
+router selection, and a change of router is a change of
+link-layer destination like any other. An unmodified host either
+accepts the timing of its ARP cache expiring and re-resolving,
+or sits behind a conventional FHRP as above.
+
+More generally, the two things a first-hop redundancy protocol
+is usually asked for are a gateway address that survives a
+change of owner and a floating service address that does the
+same. Both are the same requirement: an address that must appear
+on-link while the device holding it may change. This model meets
+the first by removing the address from the link altogether, and
+the second by route origination, where the address is originated
+by whichever member currently owns it, and originated
+conditionally by the active member for stateful pairs.
+
+## Host Implementation Considerations
 
 Implementations in which IPv4 and IPv6 stacks are managed by
 separate processes (as is common on mobile operating systems)
