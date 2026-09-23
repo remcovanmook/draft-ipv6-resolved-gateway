@@ -563,6 +563,14 @@ segments; this mechanism is applicable specifically to IPv6-only
 segments carrying dual-stack hosts and does not affect other
 segment types.
 
+## Applicability
+
+Hosts without a functional IPv6 implementation on the relevant
+interface cannot perform Neighbor Discovery and are outside
+the scope of this document.
+
+## Relationship to Other Transition Mechanisms
+
 This mechanism complements {{RFC8925}} (IPv6-Only Preferred
 Option). RFC 8925 allows hosts to signal a preference for
 IPv6-only operation, but operators must still provide IPv4
@@ -586,9 +594,7 @@ available; this mechanism provides exactly that native
 connectivity, making CLAT unnecessary on segments where it
 is deployed.
 
-Hosts without a functional IPv6 implementation on the relevant
-interface cannot perform Neighbor Discovery and are outside
-the scope of this document.
+## Host Implementation Considerations
 
 On segments with multiple routers advertising equal Default
 Router Preference (common in datacenter ECMP fabrics), hosts
