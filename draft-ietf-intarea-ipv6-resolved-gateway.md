@@ -43,6 +43,7 @@ informative:
   RFC1122:
   RFC2516:
   RFC3442:
+  RFC6877:
   RFC8585:
   CALICO-FAQ:
     target: https://docs.tigera.io/calico/latest/reference/faq
@@ -612,6 +613,36 @@ segments, a /32 drawn from {{RFC1918}} space with translation at
 the network edge works with this mechanism unchanged. What the
 host requires is a routable IPv4 identity on the segment, not a
 public one.
+
+## Access Provider Deployments
+
+The common access-network case is a single public IPv4 address
+per subscriber, delivered over an IPv6-only access network. This
+mechanism addresses that case directly, and removes several
+costs usually treated as unavoidable.
+
+No IPv4 space is carved per service area, because no segment
+carries an IPv4 prefix. No addresses are consumed by subnet and
+broadcast overhead, and none are stranded by a mismatch between
+a subnet's size and the number of subscribers actually attached
+to it. ARP is not present at MAC-domain scale. The pool is flat:
+any /32 may be assigned to any subscriber anywhere in the
+network, and reclaimed and reissued without regard to topology.
+
+Per-subscriber service differentiation follows from the same
+property. One access segment can serve subscribers holding
+public IPv4, subscribers holding addresses from shared CGN
+space, and subscribers with no IPv4 at all, at the same time.
+The distinction lies entirely in what DHCPv4 provisioning
+returns, and nowhere in the configuration of the segment.
+
+The model is not specific to one access technology. It applies
+to FTTH and DOCSIS, to enterprise and campus wireless, and to
+fixed wireless access over a mobile operator's IPv6-only
+transport, in each case as a per-subscriber /32 over IPv6-only
+infrastructure. An operator running several of these obtains a
+single IPv4 service architecture across all of them. Handsets
+remain a separate case, well served by 464XLAT {{RFC6877}}.
 
 ## Host Implementation Considerations
 
