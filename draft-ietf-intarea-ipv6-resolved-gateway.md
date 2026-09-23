@@ -336,7 +336,7 @@ indefinite resource consumption. On queue timeout, packets
 SHOULD be dropped and an ICMPv4 Host Unreachable message
 MAY be generated toward the sending application.
 
-## Multi-Homed Hosts
+## Multi-Homed Hosts {#multihomed}
 
 Cross-interface resolution MUST NOT be performed. On multi-homed
 hosts, each interface independently resolves `IPV4-SENTINEL`
@@ -398,10 +398,20 @@ prefix length. No IPv4 prefix is configured on the link; a
 sending host directs all IPv4 traffic to the first-hop router
 using the link-layer address derived from the IPv6 neighbor cache.
 A host cannot resolve another host's IPv4 address on the
-local link without router assistance; direct host-to-host
-IPv4 communication on the segment may occur via ICMPv4 redirect
-({{RFC1122}}, Section 3.2.2.2) from the gateway, but cannot be
-initiated by the host alone.
+local link without router assistance, so all intra-segment IPv4
+traffic is forwarded by the first-hop router.
+
+This mechanism does not rely on ICMPv4 redirects
+({{RFC1122}}, Section 3.2.2.2). A redirect conveys a next-hop
+address alone, and so cannot express the (destination,
+interface, sentinel) form that next-hop resolution takes here
+(see {{multihomed}}); on a multi-homed host the result would be
+ambiguous. Redirects are in any case widely filtered or ignored
+in current deployments. Where traffic is to be steered towards
+one of several first-hop routers, that selection is made
+through Default Router Preference {{RFC4191}} in Router
+Advertisements, which operates per interface and is already
+required by this mechanism for router selection.
 
 For return traffic to reach end hosts, operators MUST ensure
 that host /32 routes with an IPv6 next-hop per {{RFC8950}}
