@@ -644,6 +644,29 @@ infrastructure. An operator running several of these obtains a
 single IPv4 service architecture across all of them. Handsets
 remain a separate case, well served by 464XLAT {{RFC6877}}.
 
+## Neighbor Discovery Prerequisites
+
+Because IPv4 next-hop resolution now depends on Neighbor
+Discovery, this mechanism inherits ND's operational
+prerequisites. A fault in ND becomes an IPv4 fault as well as an
+IPv6 one.
+
+Specifically: ICMPv6 must be permitted by host firewalls, for
+Neighbor Solicitation and Neighbor Advertisement as well as
+Router Solicitation and Router Advertisement; multicast must be
+delivered correctly across the segment, including by any MLD
+snooping in the path, so that solicited-node multicast reaches
+its target; and link-layer filtering must not discard frames
+addressed to solicited-node multicast groups.
+
+None of these is a new requirement. Each is already a
+prerequisite for functioning IPv6 on the segment, and a segment
+on which they are not met does not have working IPv6 service.
+They are stated here because an operator whose IPv6 service is
+nominally working, but whose ND health has never been examined
+closely, may otherwise meet the dependency for the first time as
+an IPv4 symptom.
+
 ## Host Implementation Considerations
 
 On segments with multiple routers advertising equal Default
