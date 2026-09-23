@@ -964,11 +964,20 @@ are mitigated by RA Guard {{RFC6105}}.
 As `IPV4-SENTINEL` MUST NOT appear as source or destination in
 any forwarded packet per {{ingress}}, conformant deployments
 render it unreachable from any device not on the local segment.
-This eliminates it as a target for off-link attacks. As
-Source=False in the IANA registry (see IANA Considerations),
-no conformant off-link device will originate packets with
-`IPV4-SENTINEL` as source, precluding volumetric attacks using
-this address.
+This eliminates it as a target for off-link attacks, and by the
+same prohibition prevents its use as a spoofed source address
+from off-link: a conformant router forwards no packet carrying
+it in either field, so such a packet cannot cross the first hop
+in either direction.
+
+These off-link properties rest on that forwarding prohibition
+alone. They do not derive from the Source field of the registry
+entry, which records Source=True (see {{iana}}). Source=True is
+correct, because a first-hop router does legitimately originate
+interface-local ICMPv4 messages with `IPV4-SENTINEL` as the
+source address, as described in {{ingress}}. What confines the
+address to the segment is that no such message is ever
+forwarded.
 
 IPv6 has long used specific link-local addresses (fe80::) as
 next-hop addresses, topology-independent identifiers that
