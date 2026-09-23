@@ -39,6 +39,7 @@ normative:
 informative:
   RFC925:
   RFC1027:
+  RFC1918:
   RFC1122:
   RFC2516:
   RFC3442:
@@ -587,12 +588,30 @@ model described in {{I-D.ietf-v6ops-6mops}}, specifically
 the case where native IPv4 connectivity is provided to
 dual-stack hosts on an IPv6-only segment.
 
-CLAT {{I-D.ietf-v6ops-claton}} provides an alternative approach
-to IPv4 connectivity via translation. CLAT notes that a CLAT
-function SHOULD be disabled when native IPv4 connectivity is
-available; this mechanism provides exactly that native
-connectivity, making CLAT unnecessary on segments where it
-is deployed.
+CLAT {{I-D.ietf-v6ops-claton}} and this mechanism serve
+different demand profiles, and are not alternatives for the same
+host. CLAT provides outbound IPv4 reachability by translating
+into a pool shared at the PLAT; address sharing is the point of
+it, and a host behind a CLAT has no IPv4 address of its own that
+a remote peer can address. This mechanism provides the
+complementary thing: a per-host IPv4 address that is routable
+end to end, retains inbound reachability, and appears to the
+host stack as ordinary IPv4 configuration. A host that needs
+only outbound access to IPv4 services is well served by CLAT; a
+host that is itself an IPv4 service endpoint, or that runs
+software requiring a real IPv4 address, is not.
+
+The two interact cleanly. A CLAT function SHOULD be disabled
+when native IPv4 connectivity is available
+{{I-D.ietf-v6ops-claton}}, and this mechanism supplies exactly
+that native connectivity through ordinary DHCPv4. The existing
+trigger therefore applies with no modification.
+
+The per-host address need not be globally unique. On client
+segments, a /32 drawn from {{RFC1918}} space with translation at
+the network edge works with this mechanism unchanged. What the
+host requires is a routable IPv4 identity on the segment, not a
+public one.
 
 ## Host Implementation Considerations
 
