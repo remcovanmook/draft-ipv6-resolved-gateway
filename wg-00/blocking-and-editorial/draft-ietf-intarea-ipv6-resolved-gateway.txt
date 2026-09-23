@@ -15,17 +15,14 @@ Abstract
 
    This document specifies host behavior enabling IPv4 communication for
    dual-stack hosts on IPv6-only segments, without subnets, ARP,
-   tunneling, or translation.  Provisioning is unchanged: a host obtains
-   its IPv4 address and default gateway through ordinary, unmodified
-   DHCPv4, or by static configuration.  Only the gateway value changes.
-   When that value is a reserved IPv4 sentinel address, the host
-   resolves the next-hop link-layer address from the IPv6 neighbor cache
-   rather than via ARP; no other aspect of IPv4 operation is altered.
-   IPv4 packets are forwarded natively, end-to-end.  The mechanism is
-   incrementally deployable alongside unmodified hosts with no changes
-   to DHCPv4 infrastructure.  This document requests the allocation of
-   one IPv4 address from 192.0.0.0/24 in the IANA IPv4 Special-Purpose
-   Address Registry to support this mechanism.
+   tunneling, or translation.  A host is provisioned by ordinary DHCPv4
+   or by static configuration.  Where its IPv4 default gateway is a
+   reserved sentinel address, the host resolves the next-hop link-layer
+   address from the IPv6 neighbor cache rather than by ARP.  IPv4
+   packets are forwarded natively, end to end.  The mechanism is
+   incrementally deployable alongside unmodified hosts.  This document
+   requests the allocation of one IPv4 address from 192.0.0.0/24 in the
+   IANA IPv4 Special-Purpose Address Registry.
 
 About This Document
 
@@ -158,18 +155,14 @@ Table of Contents
    BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all
    capitals, as shown here.
 
-   This document uses the symbolic name IPV4-SENTINEL for the IPv4
-   sentinel address whose allocation is requested in Section 9.  The
-   allocated value is not yet assigned; IPV4-SENTINEL denotes whatever
-   value IANA assigns.
+   IPV4-SENTINEL denotes the IPv4 address whose allocation is requested
+   in Section 9.
 
-   [RFC Editor: please replace all occurrences of IPV4-SENTINEL with the
-   IPv4 address assigned by IANA (TBD1), and remove this note.]
+   [RFC Editor: replace IPV4-SENTINEL with the address assigned by IANA
+   (TBD1) and remove this note.]
 
-   Where a concrete value is needed for illustration, examples and
-   figures in this document use 192.0.2.11, drawn from the TEST-NET-1
-   documentation range [RFC5737].  That value is illustrative only; it
-   is not the requested allocation and has no special meaning.
+   Examples and figures use 192.0.2.11, from the TEST-NET-1
+   documentation range [RFC5737].
 
 3.  Problem Statement
 
@@ -509,19 +502,8 @@ Table of Contents
 
    As IPV4-SENTINEL MUST NOT appear as source or destination in any
    forwarded packet per Section 5.2, conformant deployments render it
-   unreachable from any device not on the local segment.  This
-   eliminates it as a target for off-link attacks, and by the same
-   prohibition prevents its use as a spoofed source address from off-
-   link: a conformant router forwards no packet carrying it in either
-   field.
-
-   These off-link properties rest on that forwarding prohibition alone.
-   They do not derive from the Source field of the registry entry, which
-   records Source=True (see Section 9).  Source=True is correct, because
-   a first-hop router does legitimately originate interface-local ICMPv4
-   messages with IPV4-SENTINEL as the source address, as described in
-   Section 5.2.  What confines the address to the segment is that no
-   such message is ever forwarded.
+   unreachable from off-link and unusable as a spoofed source address
+   beyond the segment.
 
    IPv6 has long used specific link-local addresses (fe80::) as next-hop
    addresses, topology-independent identifiers that work on any segment
@@ -541,12 +523,9 @@ Table of Contents
 
    This document requests that IANA assign a single IPv4 address from
    the 192.0.0.0/24 IETF Protocol Assignments block in the "IANA IPv4
-   Special-Purpose Address Registry" [RFC6890].  The current contents of
-   that registry are maintained by IANA at [IANA-IPV4-SPECIAL];
-   [RFC6890] defines the registry and its fields, but its tables are a
-   snapshot taken at publication.  The address 192.0.0.11/32 is
-   suggested.  The assigned value is referred to as IPV4-SENTINEL (TBD1)
-   throughout this document.
+   Special-Purpose Address Registry" [RFC6890].  The address
+   192.0.0.11/32 is suggested.  The registry's current contents are
+   maintained by IANA at [IANA-IPV4-SPECIAL].
 
         +======================+==================================+
         | Field                | Value                            |
@@ -574,11 +553,10 @@ Table of Contents
 
                                   Table 1
 
-   The Destination=True designation reflects that IPV4-SENTINEL may
-   appear as a destination in ICMPv4 messages received by the router on
-   a local interface (see Section 5.2).  It does not imply global
-   reachability; Forwardable=False and Globally Reachable=False together
-   preclude any use of this address beyond the local link.
+   Source=True and Destination=True reflect that a first-hop router
+   originates and receives interface-local ICMPv4 messages using this
+   address (see Section 5.2).  Forwardable=False and Globally
+   Reachable=False preclude any use beyond the local link.
 
 10.  References
 
