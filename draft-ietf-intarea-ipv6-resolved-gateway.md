@@ -51,18 +51,19 @@ informative:
 --- abstract
 
 This document specifies host behavior enabling IPv4 communication
-for dual-stack hosts on IPv6-only segments, without
-subnets, ARP, tunneling, or translation. Hosts that receive
-a reserved IPv4 sentinel address as their IPv4 default gateway
-address resolve
-the next-hop link-layer address from the IPv6 neighbor cache
-rather than via ARP. IPv4 packets are forwarded
-natively, end-to-end. The mechanism is incrementally deployable
-alongside unmodified hosts with no changes to DHCPv4
-infrastructure. This document
-requests the allocation of one IPv4 address from 192.0.0.0/24 in
-the IANA IPv4 Special-Purpose Address Registry to support this
-mechanism.
+for dual-stack hosts on IPv6-only segments, without subnets, ARP,
+tunneling, or translation. Provisioning is unchanged: a host
+obtains its IPv4 address and default gateway through ordinary,
+unmodified DHCPv4, or by static configuration. Only the gateway
+value changes. When that value is a reserved IPv4 sentinel
+address, the host resolves the next-hop link-layer address from
+the IPv6 neighbor cache rather than via ARP; no other aspect of
+IPv4 operation is altered. IPv4 packets are forwarded natively,
+end-to-end. The mechanism is incrementally deployable alongside
+unmodified hosts with no changes to DHCPv4 infrastructure. This
+document requests the allocation of one IPv4 address from
+192.0.0.0/24 in the IANA IPv4 Special-Purpose Address Registry to
+support this mechanism.
 
 --- middle
 
