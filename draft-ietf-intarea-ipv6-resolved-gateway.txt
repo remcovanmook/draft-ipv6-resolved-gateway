@@ -15,14 +15,14 @@ Abstract
 
    This document specifies host behavior enabling IPv4 communication for
    dual-stack hosts on IPv6-only segments, without subnets, ARP,
-   tunneling, or translation.  Hosts that receive 192.0.0.11/32 as their
-   IPv4 default gateway address resolve the next-hop link-layer address
-   from the IPv6 neighbor cache rather than via ARP.  IPv4 packets are
-   forwarded natively, end-to-end.  The mechanism is incrementally
-   deployable alongside unmodified hosts with no changes to DHCPv4
-   infrastructure.  This document requests the allocation of
-   192.0.0.11/32 in the IANA IPv4 Special-Purpose Address Registry to
-   support this mechanism.
+   tunneling, or translation.  A host is provisioned by ordinary DHCPv4
+   or by static configuration.  Where its IPv4 default gateway is a
+   reserved sentinel address, the host resolves the next-hop link-layer
+   address from the IPv6 neighbor cache rather than by ARP.  IPv4
+   packets are forwarded natively, end to end.  The mechanism is
+   incrementally deployable alongside unmodified hosts.  This document
+   requests the allocation of one IPv4 address from 192.0.0.0/24 in the
+   IANA IPv4 Special-Purpose Address Registry.
 
 About This Document
 
@@ -111,13 +111,14 @@ Table of Contents
    traffic for dual-stack hosts.  Traditional mechanisms such as dual-
    stack, tunneling, and translation all reintroduce IPv4 at the
    infrastructure level.  This document defines a sentinel IPv4 address,
-   192.0.0.11, that signals to a host stack that link-layer resolution
-   for the IPv4 default gateway is derived from the link-layer address
-   entry for the IPv6 default router in the neighbor cache [RFC4861],
-   rather than via ARP.  The IPv4 routing table entry is unchanged; only
-   the next-hop resolution path is modified.  This eliminates the need
-   for IPv4 subnets and ARP on the local segment, removing the
-   requirement for tunneling or translation at the first hop.
+   IPV4-SENTINEL, that signals to a host stack that link-layer
+   resolution for the IPv4 default gateway is derived from the link-
+   layer address entry for the IPv6 default router in the neighbor cache
+   [RFC4861], rather than via ARP.  The IPv4 routing table entry is
+   unchanged; only the next-hop resolution path is modified.  This
+   eliminates the need for IPv4 subnets and ARP on the local segment,
+   removing the requirement for tunneling or translation at the first
+   hop.
 
    This problem is already being solved in production, but
    inconsistently.  Hosting providers including Hetzner, OVH, and
@@ -135,8 +136,8 @@ Table of Contents
    is incrementally deployable today.
 
    The mechanism has been verified to work without changes to
-   applications or DHCPv4 configuration on Windows 11, macOS, Android,
-   iOS, Linux, FreeBSD, and ChromeOS.
+   applications or DHCPv4 client configuration on Windows 11, macOS,
+   Android, iOS, Linux, FreeBSD, and ChromeOS.
 
    This document addresses the host-side first-hop gap left open by
    [I-D.ietf-intarea-v4-via-v6], which defines router-to-router
@@ -153,6 +154,15 @@ Table of Contents
    "OPTIONAL" in this document are to be interpreted as described in
    BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all
    capitals, as shown here.
+
+   IPV4-SENTINEL denotes the IPv4 address whose allocation is requested
+   in Section 9.
+
+   [RFC Editor: replace IPV4-SENTINEL with the address assigned by IANA
+   (TBD1) and remove this note.]
+
+   Examples and figures use 192.0.2.11, from the TEST-NET-1
+   documentation range [RFC5737].
 
 3.  Problem Statement
 
@@ -189,7 +199,7 @@ Table of Contents
    ensures all IPv4 traffic is directed to the first-hop router via the
    sentinel, with no on-link ARP possible.
 
-   When a host is configured to use 192.0.0.11 as its IPv4 default
+   When a host is configured to use IPV4-SENTINEL as its IPv4 default
    gateway, the host's operating system MUST implement the following
    logic:
 
@@ -199,11 +209,11 @@ Table of Contents
        additional action specific to this mechanism is required at
        interface configuration time.
 
-   2.  When the next hop for an IPv4 packet is 192.0.0.11, the host MUST
-       NOT perform ARP.  Instead, it consults the IPv6 default router
-       list and neighbor cache for the link-layer address, scoped to the
-       interface on which 192.0.0.11 is configured as the IPv4 default
-       gateway.
+   2.  When the next hop for an IPv4 packet is IPV4-SENTINEL, the host
+       MUST NOT perform ARP.  Instead, it consults the IPv6 default
+       router list and neighbor cache for the link-layer address, scoped
+       to the interface on which IPV4-SENTINEL is configured as the IPv4
+       default gateway.
 
    3.  If the IPv6 default router link-layer address is in a usable NUD
        state (REACHABLE, STALE, DELAY, or PROBE per [RFC4861]), the IPv4
@@ -218,26 +228,26 @@ Table of Contents
        address.  For behavior prior to first RA reception, see the
        startup paragraph below.
 
-   Host stacks MUST treat 192.0.0.11 as a sentinel address signalling
+   Host stacks MUST treat IPV4-SENTINEL as a sentinel address signalling
    that IPv6-based next-hop resolution is to be used, regardless of
    other address configuration on the interface.  This behavior is
    unconditional and not dependent on any additional signaling.
 
-   When a DHCPv4 lease configuring 192.0.0.11 expires and is not
-   renewed, the host SHOULD remove 192.0.0.11 as the IPv4 default
+   When a DHCPv4 lease configuring IPV4-SENTINEL expires and is not
+   renewed, the host SHOULD remove IPV4-SENTINEL as the IPv4 default
    gateway and cease IPv6-based resolution on that interface.  For
    statically configured deployments, removal is governed by local
    administrative policy.
 
    Cross-interface resolution MUST NOT be performed.  On multi-homed
-   hosts, each interface independently resolves 192.0.0.11 against its
-   own IPv6 neighbor cache state.
+   hosts, each interface independently resolves IPV4-SENTINEL against
+   its own IPv6 neighbor cache state.
 
    The following pseudocode defines the resolution logic:
 
-   on interface I (where 192.0.0.11 is the configured IPv4 gateway):
+   on interface I (where IPV4-SENTINEL is the configured IPv4 gateway):
 
-     if next-hop(pkt) == 192.0.0.11:
+     if next-hop(pkt) == IPV4-SENTINEL:
 
        routers = default_router_list(I)
 
@@ -314,7 +324,8 @@ Table of Contents
 
    Host A                      Router R1
    IPv4: 198.51.100.1/32       (no IPv4 address configured)
-   IPv6: 2001:db8:1::1         IPv6 link-local: fe80::R1
+   IPv4 gw: 192.0.2.11         IPv6 link-local: fe80::R1
+   IPv6: 2001:db8:1::1
 
      [1] IPv4 pkt (src: 198.51.100.1, dst: 203.0.113.5)
          L2 dst: MAC(R1) -- resolved from ND cache, no ARP
@@ -341,9 +352,9 @@ Table of Contents
 
 5.2.  Router Ingress Behavior
 
-   Routers MUST treat 192.0.0.11 as an interface-scoped address, valid
-   only on the interface on which it is configured, and only for
-   locally-terminated traffic. 192.0.0.11 does not appear in IPv4
+   Routers MUST treat IPV4-SENTINEL as an interface-scoped address,
+   valid only on the interface on which it is configured, and only for
+   locally-terminated traffic.  IPV4-SENTINEL does not appear in IPv4
    fragment headers; fragmentation behavior is unchanged by this
    mechanism.  Specifically:
 
@@ -354,26 +365,27 @@ Table of Contents
    *  It MUST NOT appear as source or destination in any forwarded
       packet.
 
-   A router MAY respond to ICMPv4 echo requests addressed to 192.0.0.11
-   and MAY generate ICMPv4 Time Exceeded messages using 192.0.0.11 as
-   the source address.  All such messages are interface-local.
+   A router MAY respond to ICMPv4 echo requests addressed to
+   IPV4-SENTINEL and MAY generate ICMPv4 Time Exceeded messages using
+   IPV4-SENTINEL as the source address.  All such messages are
+   interface-local.
 
    ICMPv4 error generation on IPv6-only transit routers is out of scope;
    see [RFC7600].
 
 5.3.  Backward Compatibility: Router ARP Response
 
-   The use of 192.0.0.11 as the DHCPv4 Router Option (Option 3) value is
-   fully conformant with [RFC2132], which imposes no requirement that
+   The use of IPV4-SENTINEL as the DHCPv4 Router Option (Option 3) value
+   is fully conformant with [RFC2132], which imposes no requirement that
    the router address be reachable via ARP on the same subnet.  Unlike
    [RFC1027] (proxy ARP), the router is not proxying for a remote host;
    it owns this address on the interface for the purpose of link-layer
    reachability.
 
-   Unmodified hosts receiving 192.0.0.11 as their IPv4 default gateway
-   will issue an ARP request for it.  A router SHOULD respond to such
-   ARP requests with its own MAC address.  This is not proxy ARP: no
-   subnet exists, no remote host is being proxied.
+   Unmodified hosts receiving IPV4-SENTINEL as their IPv4 default
+   gateway will issue an ARP request for it.  A router SHOULD respond to
+   such ARP requests with its own MAC address.  This is not proxy ARP:
+   no subnet exists, no remote host is being proxied.
 
    This enables a two-tier deployment model on the same L2 segment:
 
@@ -385,7 +397,7 @@ Table of Contents
 
    Both tiers interoperate, allowing incremental deployment.  The router
    requires no per-host state to support both tiers simultaneously:
-   updated hosts will not send ARP requests for 192.0.0.11, so the
+   updated hosts will not send ARP requests for IPV4-SENTINEL, so the
    router's ARP response behavior is triggered only by unmodified hosts.
 
 6.  Deployment Considerations
@@ -402,7 +414,7 @@ Table of Contents
    connectivity on an IPv6-only segment, without requiring a dual-stack
    infrastructure or an IPv4 subnet on the local link.  A host that
    receives Option 108 and transitions to IPv6-only operation retains
-   functional IPv4 connectivity via 192.0.0.11 without any additional
+   functional IPv4 connectivity via IPV4-SENTINEL without any additional
    configuration.
 
    This mechanism fits within the IPv6-mostly network deployment model
@@ -433,7 +445,7 @@ Table of Contents
    does not affect the on-wire behavior defined in this document.
 
    DHCPv4 relay agents that enforce on-link gateway validation may
-   reject or flag 192.0.0.11 as an invalid router option.  Operators
+   reject or flag IPV4-SENTINEL as an invalid router option.  Operators
    SHOULD verify relay agent behavior in their deployment before relying
    on this mechanism.
 
@@ -455,16 +467,16 @@ Table of Contents
    with RA Guard [RFC6105].  Subnet scanning is mitigated since hosts
    carry /32 addresses only.
 
-   A host receiving 192.0.0.11 as its IPv4 default gateway on a network
-   that does not implement this mechanism will issue an ARP request that
-   receives no response, causing IPv4 connectivity to fail silently.
-   Operators SHOULD ensure 192.0.0.11 is only offered via DHCPv4 on
-   segments where the mechanism is deployed.  DHCPv4 snooping and
-   dynamic ARP inspection, where used, MUST be configured to permit ARP
-   responses for 192.0.0.11 from the first-hop router.
+   A host receiving IPV4-SENTINEL as its IPv4 default gateway on a
+   network that does not implement this mechanism will issue an ARP
+   request that receives no response, causing IPv4 connectivity to fail
+   silently.  Operators SHOULD ensure IPV4-SENTINEL is only offered via
+   DHCPv4 on segments where the mechanism is deployed.  DHCPv4 snooping
+   and dynamic ARP inspection, where used, MUST be configured to permit
+   ARP responses for IPV4-SENTINEL from the first-hop router.
 
    This mechanism does not interact with IPv4 link-local address
-   configuration per [RFC3927].  A host configured with 192.0.0.11 as
+   configuration per [RFC3927].  A host configured with IPV4-SENTINEL as
    its gateway and a link-local IPv4 source address will follow the same
    resolution logic defined in Section 4 (Host Behavior and Next-Hop
    Resolution).
@@ -472,34 +484,31 @@ Table of Contents
 7.2.  Universal Gateway Address
 
    A consequence of the IANA allocation and the ARP behavior defined in
-   Section 5.3 is that 192.0.0.11 can serve as a topology-independent
+   Section 5.3 is that IPV4-SENTINEL can serve as a topology-independent
    gateway address in any deployment where routers respond to ARP for
    it, not limited to IPv6-only segments.  This document does not
    specify or require this behavior in IPv4-only deployments; it is an
    emergent property of the allocation.
 
-   In segments where routers respond to ARP for 192.0.0.11, it functions
-   as a universal gateway address.  Unlike a conventional per-subnet
-   gateway address, it does not reveal network topology and carries no
-   subnet membership information.  ARP cache poisoning of 192.0.0.11 is
-   less valuable than poisoning a conventional gateway address, as it
-   carries no topological information for an attacker to exploit; it can
-   only redirect local-segment traffic, mitigated by dynamic ARP
-   inspection.  Rogue RA attacks achieve the same redirection and are
-   mitigated by RA Guard [RFC6105].
+   In segments where routers respond to ARP for IPV4-SENTINEL, it
+   functions as a universal gateway address.  Unlike a conventional per-
+   subnet gateway address, it does not reveal network topology and
+   carries no subnet membership information.  ARP cache poisoning of
+   IPV4-SENTINEL is less valuable than poisoning a conventional gateway
+   address, as it carries no topological information for an attacker to
+   exploit; it can only redirect local-segment traffic, mitigated by
+   dynamic ARP inspection.  Rogue RA attacks achieve the same
+   redirection and are mitigated by RA Guard [RFC6105].
 
-   As 192.0.0.11 MUST NOT appear as source or destination in any
+   As IPV4-SENTINEL MUST NOT appear as source or destination in any
    forwarded packet per Section 5.2, conformant deployments render it
-   unreachable from any device not on the local segment.  This
-   eliminates it as a target for off-link attacks.  As Source=False in
-   the IANA registry (see IANA Considerations), no conformant off-link
-   device will originate packets with 192.0.0.11 as source, precluding
-   volumetric attacks using this address.
+   unreachable from off-link and unusable as a spoofed source address
+   beyond the segment.
 
    IPv6 has long used specific link-local addresses (fe80::) as next-hop
    addresses, topology-independent identifiers that work on any segment
-   without carrying subnet membership information. 192.0.0.11 provides
-   the same property for IPv4.
+   without carrying subnet membership information.  IPV4-SENTINEL
+   provides the same property for IPv4.
 
 8.  Implementation Requirements
 
@@ -512,13 +521,16 @@ Table of Contents
 
 9.  IANA Considerations
 
-   This document requests that IANA assign 192.0.0.11/32 in the "IANA
-   IPv4 Special-Purpose Address Registry" [RFC6890] as follows:
+   This document requests that IANA assign a single IPv4 address from
+   the 192.0.0.0/24 IETF Protocol Assignments block in the "IANA IPv4
+   Special-Purpose Address Registry" [RFC6890].  The address
+   192.0.0.11/32 is suggested.  The registry's current contents are
+   maintained by IANA at [IANA-IPV4-SPECIAL].
 
         +======================+==================================+
         | Field                | Value                            |
         +======================+==================================+
-        | Address Block        | 192.0.0.11/32                    |
+        | Address Block        | TBD1 (suggested: 192.0.0.11/32)  |
         +----------------------+----------------------------------+
         | Name                 | IPv4 Gateway via IPv6 Resolution |
         +----------------------+----------------------------------+
@@ -541,11 +553,10 @@ Table of Contents
 
                                   Table 1
 
-   The Destination=True designation reflects that 192.0.0.11 may appear
-   as a destination in ICMPv4 messages received by the router on a local
-   interface (see Section 5.2).  It does not imply global reachability;
-   Forwardable=False and Globally Reachable=False together preclude any
-   use of this address beyond the local link.
+   Source=True and Destination=True reflect that a first-hop router
+   originates and receives interface-local ICMPv4 messages using this
+   address (see Section 5.2).  Forwardable=False and Globally
+   Reachable=False preclude any use beyond the local link.
 
 10.  References
 
@@ -592,9 +603,9 @@ Table of Contents
    [I-D.ietf-v6ops-6mops]
               Buraglio, N., Caletka, O., and J. Linkova, "IPv6-mostly
               Networks: Deployment and Operations Considerations", Work
-              in Progress, Internet-Draft, draft-ietf-v6ops-6mops-09, 12
-              August 2026, <https://datatracker.ietf.org/doc/html/draft-
-              ietf-v6ops-6mops-09>.
+              in Progress, Internet-Draft, draft-ietf-v6ops-6mops-10, 10
+              September 2026, <https://datatracker.ietf.org/doc/html/
+              draft-ietf-v6ops-6mops-10>.
 
    [I-D.ietf-v6ops-claton]
               Colitti, L., Linkova, J., and T. Jensen, "464XLAT
@@ -603,6 +614,11 @@ Table of Contents
               ietf-v6ops-claton-16, 5 March 2026,
               <https://datatracker.ietf.org/doc/html/draft-ietf-v6ops-
               claton-16>.
+
+   [IANA-IPV4-SPECIAL]
+              IANA, "IPv4 Special-Purpose Address Registry", n.d.,
+              <https://www.iana.org/assignments/iana-ipv4-special-
+              registry/>.
 
    [RFC1027]  Carl-Mitchell, S. and J. Quarterman, "Using ARP to
               implement transparent subnet gateways", RFC 1027,
