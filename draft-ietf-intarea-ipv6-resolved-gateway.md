@@ -42,6 +42,7 @@ informative:
   RFC1918:
   RFC1122:
   RFC2516:
+  RFC3021:
   RFC3046:
   RFC3442:
   RFC6877:
@@ -91,65 +92,197 @@ support this mechanism.
 
 # Introduction
 
-An IPv4 address functions as a service endpoint identifier --
-either for a client seeking access to a service, or a server
-providing one. The BSD socket API, present in virtually every
-operating system and language runtime, expresses this directly:
-a call to `connect(AF_INET, "192.0.2.1", 80)` is a statement
-about which service to reach, not about routing or link-layer
-resolution. The host implements IPv4 natively;
+Operators have been able to build IPv6-only infrastructure for
+years. The routing protocols, the address space and the tooling
+are all in place, and IPv6-only control planes run in production
+in datacenter fabrics and access networks today. Almost all of
+those networks nonetheless carry a parallel IPv4 architecture,
+because the applications, devices and systems running on top of
+them continue to require IPv4 reachability. A network team that
+has built a clean IPv6-only fabric finds itself maintaining IPv4
+subnets, IPv4 gateway addresses and ARP alongside it
+indefinitely.
+
+This document addresses that situation by separating two things
+that have long been treated as one.
+
+## Two Kinds of IPv4
+
+The IPv4 that applications require is reachability to and from
+everything beyond the first hop: the public IPv4 Internet, and
+equally the internal services to which applications still open
+IPv4 sockets. An IPv4 address here serves as a service endpoint
+identifier, for a client seeking a service or a server providing
+one. The BSD socket API, present in virtually every operating
+system and language runtime, expresses this directly: a call to
+`connect(AF_INET, "192.0.2.1", 80)` is a statement about which
+service to reach, not about routing or link-layer resolution.
+This demand is real and durable, and this document does not
+question it.
+
+The IPv4 that networks deploy in order to satisfy that demand is
+a different thing: an IPv4 subnet on the local segment, a
+broadcast domain, ARP, and a default gateway that must be the
+host's on-link neighbor. No application asks for any of it. It
+is the architecture that has historically been required to
+deliver the first thing, and the two have been conflated for so
+long that needing to reach IPv4 has been taken to entail being
+attached to an IPv4 network. Separating them is the subject of
+this document; the mechanism defined below is a consequence of
+the separation rather than the point of it.
+
+On many segments the local part was never used. Access networks
+and hosting segments commonly suppress lateral traffic by
+design, through port isolation, split horizon or private VLANs:
+subscribers do not address subscribers, and tenants do not
+address tenants. On such a segment the only IPv4 destination
+ever resolved on-link is the gateway, and the subnet exists so
+that ARP has a jurisdiction within which to operate.
+
+That a subnet may contain nothing beyond the ends of a link is
+long established. {{RFC3021}} standardised 31-bit prefixes by
+observing that the network and broadcast addresses carry no
+meaning on a point-to-point link. A large access subnet with
+lateral traffic suppressed is the same observation at scale: the
+netmask acts as a compression scheme for a set of host routes,
+and ARP as the corresponding decompressor.
+
+## The Local IPv4 Dependency Stack
+
+What rests on the local network is a stack of dependencies, from
+the bottom up:
+
+- The IPv4 subnet establishes on-link jurisdiction. The netmask
+  is the decision procedure determining whether a destination is
+  resolved locally or handed to a gateway.
+- ARP enforces that decision on multi-access links. It does not
+  make the determination; it acts on one already made.
+- A first-hop redundancy protocol exists because the subnet
+  requires a gateway address and ARP admits only one owner for
+  it, so any resilient deployment must hold an election. VRRP,
+  HSRP and CARP address exactly this.
+- Address pools are carved to follow the subnetting: sized per
+  service area, allocated ahead of demand, and renumbered when
+  demand moves.
+- The IPv4 host address sits on top. It is the only layer any
+  application asked for.
+
+Alongside the stack rather than within it sits a policing
+apparatus: DHCP snooping, dynamic ARP inspection and binding
+tables. It exists because the base of the stack is an
+unauthenticated broadcast protocol feeding a table that permits
+only one answer to exist.
+
+~~~
+       Conventional                      This document
+
+  +----------------------+          +----------------------+
+  |  IPv4 host address   |          |  IPv4 host address   |
+  +----------------------+          +----------------------+
+  | carved address pools |          |  IPv6 Neighbor       |
+  +----------------------+          |  Discovery           |
+  |  FHRP                |          +----------------------+
+  +----------------------+
+  |  ARP                 |--+ DHCP snooping, dynamic ARP
+  +----------------------+  | inspection, binding tables
+  |  IPv4 subnet         |
+  +----------------------+
+~~~
+
+None of this was poor engineering. ARP was specified on the
+assumption that it operated alone on the link, which in 1982 it
+did; there was no adjacent resolution protocol to design
+against. What did not follow was revision. IPv6 arrived on the
+same links carrying a complete neighbor resolution service, and
+IPv4 link-layer resolution was never reconsidered in its light.
+The prevailing dual-stack model held the two stacks deliberately
+independent instead. IPv4 continues to resolve as though it were
+alone on the link, which it has not been for a long time.
+
+## Removing the Base Layer
+
+Removing the base layer removes the need for those above it.
+
+With no IPv4 prefix on the segment, every IPv4 destination is
+off-link by construction, and ARP retains one vestigial
+function: locating the gateway. This is not hypothetical.
+Hosting providers including Hetzner, OVH and Scaleway have
+assigned /32 host addresses with off-link IPv4 gateways for
+years, each using a different gateway address and a different
+per-OS configuration recipe -- Linux `pointopoint`, netplan
+`on-link: true`, explicit post-up routes -- documented in
+provider wikis and in no RFC, and not interoperable with one
+another.
+
+The sentinel address defined in this document removes the
+remaining function. A host that receives it as its IPv4 default
+gateway resolves the first-hop link-layer address from the IPv6
+neighbor cache it already maintains, and ARP is not used at all.
+
+The layers above lose their object in turn. With no gateway
+address on the link, there is no address for a redundancy
+protocol to elect an owner for, and any number of routers may
+present the sentinel simultaneously without coordination. With
+no subnetting to follow, address pools become flat: any address
+may be assigned anywhere in the deployment, and none is stranded
+by the sizing of a prefix. The policing apparatus reduces to a
+single rule, because the first-hop router is the only legitimate
+source of an ARP reply.
+
+What remains is IPv6 Neighbor Discovery, a flat pool, and the
+host's own IPv4 address: a /32 resting directly on the neighbor
+discovery the segment already operates.
+
+This is not a novel arrangement at the host. A VPN connection
+provides exactly it: a /32 with no subnet, no ARP, no local IPv4
+network, and a next-hop that is not on-link in any classical
+sense. Every mainstream operating system, and every application
+running on one, handles subnet-less IPv4 on tunnel interfaces
+routinely, closed platforms included. What this document changes
+is not a host's capacity to operate that way, but the means by
+which it is told to.
+
+## The Mechanism
+
+This document defines a sentinel IPv4 address, `IPV4-SENTINEL`,
+that signals to a host stack that link-layer resolution for the
+IPv4 default gateway is derived from the link-layer address
+entry for the IPv6 default router in the neighbor cache
+{{RFC4861}}, rather than via ARP. The IPv4 routing table entry
+is unchanged; only the next-hop resolution path is modified.
+This eliminates the need for IPv4 subnets and ARP on the local
+segment, and with them the requirement for tunneling or
+translation at the first hop. The host implements IPv4 natively;
 routers recognise and forward IPv4 packets and will continue to
-do so. What this document changes is solely how the host resolves
-the link-layer next-hop for the first hop.
+do so. What this document changes is solely how the host
+resolves the link-layer next-hop for the first hop.
 
-Networks transitioning to IPv6-only segments still need to carry
-IPv4 traffic for dual-stack hosts. Traditional mechanisms such as
-dual-stack, tunneling, and translation all reintroduce IPv4 at
-the infrastructure level. This document defines a sentinel
-IPv4 address, `IPV4-SENTINEL`, that signals to a host stack that
-link-layer resolution for the IPv4 default gateway is derived
-from the link-layer address entry for the IPv6 default router in
-the neighbor cache {{RFC4861}}, rather than via ARP. The IPv4
-routing table entry is unchanged; only the next-hop resolution
-path is modified. This eliminates the need for IPv4 subnets and
-ARP on the local segment, removing the requirement for tunneling
-or translation at the first hop.
-
-This problem is already being solved in production, but
-inconsistently. Hosting providers including Hetzner, OVH, and
-Scaleway independently deploy /32 host addresses with off-link
-IPv4 gateways using per-OS workarounds (Linux pointopoint, netplan
-on-link: true, explicit post-up routes). None of this is
-documented in any RFC, and the implementations are not
-interoperable across providers. This draft standardises the
-pattern with a single sentinel address that host stacks can
-implement natively. Alternative
-approaches (a new DHCPv4 option, or implicit behaviour when
-no router is specified) would both require DHCPv4 client
-changes across every OS implementation; given typical
-deployment timescales, meaningful coverage would take a decade
-at best.
+Alternative approaches -- a new DHCPv4 option, or implicit
+behaviour when no router is specified -- would both require
+DHCPv4 client changes across every OS implementation; given
+typical deployment timescales, meaningful coverage would take a
+decade at best.
 
 The cost of a new DHCPv4 option is also not confined to client
 stacks. An operator's billing, provisioning, inventory,
 monitoring, NOC tooling and validation logic all encode what an
 IPv4 gateway looks like, and a new option changes that shape in
-every one of them at once. A sentinel address changes none of it:
-to every system that reads or stores a lease it is an ordinary
-IPv4 gateway address, syntactically and semantically valid, and
-it passes through unaltered. The only component that has to know
-the value is special is the host stack performing next-hop
-resolution.
+every one of them at once. A sentinel address changes none of
+it: to every system that reads or stores a lease it is an
+ordinary IPv4 gateway address, syntactically and semantically
+valid, and it passes through unaltered. The only component that
+has to know the value is special is the host stack performing
+next-hop resolution.
 
-The sentinel address approach requires no changes to
-DHCPv4 clients or servers and is incrementally deployable
-today. Updated and unmodified hosts coexist on the same segment
+The sentinel address approach therefore requires no changes to
+DHCPv4 clients or servers and is incrementally deployable today.
+Updated and unmodified hosts coexist on the same segment
 indefinitely, and a segment may be converted one host at a time.
 There is no flag day or mandatory switch-over point.
 
 The mechanism has been verified to work without changes to
-applications or DHCPv4 client configuration on Windows 11, macOS,
-Android, iOS, Linux, FreeBSD, and ChromeOS.
+applications or DHCPv4 client configuration on Windows 11,
+macOS, Android, iOS, Linux, FreeBSD, and ChromeOS.
 
 This document addresses the host-side first-hop gap left open
 by {{I-D.ietf-intarea-v4-via-v6}}, which defines router-to-router
