@@ -106,7 +106,7 @@ indefinitely.
 This document addresses that situation by separating two things
 that have long been treated as one.
 
-## Two Kinds of IPv4
+## Two Kinds of IPv4 {#two-kinds}
 
 The IPv4 that applications require is reachability to and from
 everything beyond the first hop: the public IPv4 Internet, and
@@ -713,6 +713,38 @@ segment types.
 Hosts without a functional IPv6 implementation on the relevant
 interface cannot perform Neighbor Discovery and are outside
 the scope of this document.
+
+Segment types differ in how well they suit this mechanism, and
+the distinction follows the analysis in {{two-kinds}}: what
+matters is whether IPv4 traffic lateral to the segment exists,
+and whether it can be enumerated.
+
+Access and hosting segments are the clearest case. Lateral IPv4
+traffic between subscribers or between tenants is generally
+suppressed by design, so the on-link IPv4 subnet serves only to
+locate the gateway. Removing it costs nothing that was in use.
+
+Enterprise and campus segments are a managed estate. The hosts
+and applications that genuinely require on-link IPv4 can be
+inventoried rather than guessed at, and where genuinely
+IPv4-only systems remain they are typically already statically
+administered. Such systems can be kept in a small dual-stack
+enclave under the management model they already have, while the
+rest of the segment converts.
+
+Residential segments are outside the scope of this document.
+Consumer devices and applications carry unauditable assumptions
+about local IPv4 reachability -- casting and display protocols,
+game and peripheral discovery, and similar -- and the home
+segment is the case in which hosts genuinely do address one
+another over IPv4 in ways an operator cannot enumerate.
+
+Segments on which a default gateway is not a meaningful notion
+are likewise out of scope. An Internet exchange peering LAN is
+the canonical example: there is no default gateway, every
+destination is a peer, and all traffic is lateral by design. A
+mechanism concerned with resolving the way off a segment has
+nothing to offer one that consists entirely of exits.
 
 ## Relationship to Other Transition Mechanisms
 
