@@ -44,6 +44,9 @@ informative:
   RFC2516:
   RFC3442:
   RFC6877:
+  RFC7217:
+  RFC7513:
+  RFC8981:
   RFC8585:
   CALICO-FAQ:
     target: https://docs.tigera.io/calico/latest/reference/faq
@@ -841,6 +844,27 @@ subscriber routes on exactly this basis today. This is an
 illustration only: route origination belongs to {{RFC8950}} and
 {{I-D.ietf-intarea-v4-via-v6}}, and nothing in this document
 constrains how it is done.
+
+The choice of IPv6 next-hop identity for those routes deserves
+care. An IPv6 link-local address is not a stable identifier for
+a host under current address-generation practice. An
+implementation that moves from an interface-identifier-derived
+address to a semantically opaque one {{RFC7217}} may do so
+during interface bring-up, in the middle of the DHCPv4 exchange,
+so a return route keyed to the first link-local address observed
+can be stale before the host has finished configuring.
+
+Operators SHOULD therefore key return routes to a stable
+next-hop identity wherever one is available: a global address
+the provisioning system already knows, an address anchored to a
+delegated prefix, or a binding derived from ND snooping or a
+source address validation mechanism {{RFC7513}}, using the
+link-local address only as a fallback. Where only link-local
+addresses are available, origination has to track changes of
+identity through Neighbor Discovery rather than assume that the
+first address seen persists. Where a global address is used, it
+MUST be a stable one: temporary addresses {{RFC8981}} are
+designed to rotate and are unsuitable as a next-hop identity.
 
 ## Host Implementation Considerations
 
