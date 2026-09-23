@@ -667,6 +667,33 @@ nominally working, but whose ND health has never been examined
 closely, may otherwise meet the dependency for the first time as
 an IPv4 symptom.
 
+## Intra-Segment Traffic
+
+Because hosts carry /32 addresses, traffic between two hosts on
+the same segment is forwarded by the first-hop router rather
+than switched directly. The cost of this is topology-dependent,
+and is frequently overstated.
+
+Where the first-hop router is the access switch itself, as in an
+L3 access design or a datacenter leaf, the forwarded path
+traverses the same physical links the switched path would have
+used, and is forwarded in hardware at line rate. The additional
+cost is a forwarding lookup, not additional wire. The case that
+does cost bandwidth twice is a router on a stick behind a shared
+L2 domain, where each intra-segment packet crosses the uplink
+once in each direction.
+
+Guidance therefore follows the demand rather than the mechanism.
+On the segments this mechanism most obviously suits -- access
+and hosting segments, where lateral IPv4 between customers is
+suppressed by policy or simply absent -- the cost rounds to
+zero. On enterprise segments with an L3 access layer it is a
+forwarding lookup. A segment carrying heavy east-west IPv4
+traffic behind a shared L2 domain, reached by a router on a
+stick, is the case that should not adopt this mechanism first:
+such a segment is better left dual-stack, or moved to IPv6 for
+its east-west traffic before the IPv4 first hop is converted.
+
 ## Host Implementation Considerations
 
 On segments with multiple routers advertising equal Default
