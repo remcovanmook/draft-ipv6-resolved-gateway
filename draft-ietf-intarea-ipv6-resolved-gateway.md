@@ -823,6 +823,25 @@ lease governs the host's address and the configured gateway
 value, while resolution of that value is driven solely by
 Neighbor Discovery.
 
+## Return Path Provisioning
+
+{{durability}} requires that a first-hop router be able to
+deliver to each host /32 for the lifetime of the assignment. The
+mechanisms are outside the scope of this document, but one
+practical point is worth recording.
+
+Lease-triggered origination is existing practice rather than a
+new invention. Where the first-hop router is the DHCPv4 relay,
+or observes relayed traffic, it already holds the lease binding;
+together with the host's link-layer address from Neighbor
+Discovery, that is sufficient to originate the {{RFC8950}} route
+for the host's /32 when the lease is granted and to withdraw it
+when the lease ends. Broadband network gateways originate
+subscriber routes on exactly this basis today. This is an
+illustration only: route origination belongs to {{RFC8950}} and
+{{I-D.ietf-intarea-v4-via-v6}}, and nothing in this document
+constrains how it is done.
+
 ## Host Implementation Considerations
 
 Implementations in which IPv4 and IPv6 stacks are managed by
