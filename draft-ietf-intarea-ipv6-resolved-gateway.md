@@ -694,6 +694,37 @@ stick, is the case that should not adopt this mechanism first:
 such a segment is better left dual-stack, or moved to IPv6 for
 its east-west traffic before the IPv4 first hop is converted.
 
+## Layer 2 Integrity Features
+
+DHCP snooping, Dynamic ARP Inspection and IP Source Guard were
+specified against an assumption of a shared subnet with on-link
+bindings. Their behaviour with an off-subnet gateway and /32
+leases needs to be validated per platform before deployment.
+
+The expected analysis is favourable. The first-hop router sits
+on a trusted port, so its ARP reply for the sentinel is not
+subject to inspection and passes unchanged. An unmodified host's
+ARP request validates against that host's own sender binding,
+which the DHCPv4 /32 lease supplies in the usual way. IP Source
+Guard sees the leased address and permits it. None of this
+depends on the gateway being a member of the host's subnet.
+
+The residue is where attention is warranted. A first-hop router
+on an untrusted port needs a static permit for the sentinel.
+Platforms vary in whether inspection examines the ARP target
+address as well as the sender, and in how gratuitous ARP is
+treated. Some platforms carry binding machinery beyond these
+three features, with its own subnet assumptions. Where a static
+permit is required, a single universal entry suffices for an
+entire deployment, because the sentinel holds the same value on
+every segment.
+
+This apparatus becomes unnecessary for IPv4 as migration
+completes. Once no unmodified hosts remain and the router's ARP
+responder has been retired, there is no ARP on the segment to
+inspect, and host impersonation is an ND concern met by
+ND-specific protections (see {{security-considerations}}).
+
 ## Host Implementation Considerations
 
 On segments with multiple routers advertising equal Default
