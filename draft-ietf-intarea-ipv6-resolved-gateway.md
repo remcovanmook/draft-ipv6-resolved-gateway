@@ -730,7 +730,7 @@ responder has been retired, there is no ARP on the segment to
 inspect, and host impersonation is an ND concern met by
 ND-specific protections (see {{security-considerations}}).
 
-## Multiple Gateways and Redundancy
+## Multiple Gateways and Redundancy {#redundancy}
 
 Because the sentinel is resolved from the neighbor cache and
 never by election, any number of routers on a segment may
@@ -920,6 +920,23 @@ deployments. Broadcast traffic is reduced to a single predictable
 ARP exchange per unmodified host at startup, compared to
 continuous ARP traffic across a conventional subnet.
 
+The consequence for inspection policy is a simplification. On a
+segment where this mechanism is deployed, the first-hop router
+is the only legitimate ARP responder, and the sentinel is the
+only address it answers for. ARP inspection therefore reduces to
+permitting ARP replies from router ports and denying them
+everywhere else. Expressing that policy requires no snooping
+database and no per-host binding table, because the policy does
+not refer to host addresses at all.
+
+Host impersonation is not eliminated by this; it moves. With ARP
+gone, an attacker seeking to divert traffic must attack Neighbor
+Discovery, where RA Guard {{RFC6105}} and ND inspection already
+apply. The segment is then defended by one protection stack
+covering one resolution protocol, instead of parallel stacks for
+ARP and ND that have to be configured and kept consistent
+separately.
+
 The mechanism relies on the integrity of IPv6 Neighbor Discovery.
 Rogue RA risks apply as in any IPv6 deployment and can be
 mitigated with RA Guard {{RFC6105}}. Subnet scanning is
@@ -939,6 +956,22 @@ configuration per {{RFC3927}}. A host configured with
 `IPV4-SENTINEL` as its gateway and a link-local IPv4 source
 address will follow the same resolution logic defined in
 {{host-behavior}}.
+
+## First-Hop Redundancy Protocol Attack Surface
+
+Because any number of routers may present the sentinel without
+coordination (see {{redundancy}}), a first-hop redundancy
+protocol is not required for the updated tier. Where one is
+consequently no longer run, its attack surface goes with it.
+VRRP and HSRP advertisement spoofing, election manipulation, and
+the traffic diversion or denial of service that follow from them
+are not merely mitigated on such a segment: they cease to be
+possible, because no election takes place.
+
+This benefit is contingent on actually retiring the protocol. An
+operator who keeps a conventional FHRP in front of the
+unmodified-host tier (see {{arp-compat}}) keeps its attack
+surface for as long as it runs.
 
 ## Universal Gateway Address
 
