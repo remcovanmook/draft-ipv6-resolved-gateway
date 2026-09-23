@@ -481,13 +481,9 @@ inspection. Rogue RA attacks achieve the same redirection and
 are mitigated by RA Guard {{RFC6105}}.
 
 As `IPV4-SENTINEL` MUST NOT appear as source or destination in
-any forwarded packet per Section 5.2, conformant deployments
-render it unreachable from any device not on the local segment.
-This eliminates it as a target for off-link attacks. As
-Source=False in the IANA registry (see IANA Considerations),
-no conformant off-link device will originate packets with
-`IPV4-SENTINEL` as source, precluding volumetric attacks using
-this address.
+any forwarded packet per {{ingress}}, conformant deployments
+render it unreachable from off-link and unusable as a spoofed
+source address beyond the segment.
 
 IPv6 has long used specific link-local addresses (fe80::) as
 next-hop addresses, topology-independent identifiers that
@@ -524,12 +520,10 @@ address `192.0.0.11/32` is suggested.
 | Globally Reachable   | False                          |
 | Reserved-by-Protocol | False                          |
 
-The Destination=True designation reflects that `IPV4-SENTINEL`
-may appear as a destination in ICMPv4 messages received by
-the router on a local interface (see Section 5.2). It does
-not imply global reachability; Forwardable=False and
-Globally Reachable=False together preclude any use of this
-address beyond the local link.
+Source=True and Destination=True reflect that a first-hop router
+originates and receives interface-local ICMPv4 messages using
+this address (see {{ingress}}). Forwardable=False and Globally
+Reachable=False preclude any use beyond the local link.
 
 --- back
 
