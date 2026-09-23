@@ -108,7 +108,9 @@ changes across every OS implementation; given typical
 deployment timescales, meaningful coverage would take a decade
 at best. The sentinel address approach requires no changes to
 DHCPv4 clients or servers and is incrementally deployable
-today.
+today. Updated and unmodified hosts coexist on the same segment
+indefinitely, and a segment may be converted one host at a time.
+There is no flag day or mandatory switch-over point.
 
 The mechanism has been verified to work without changes to
 applications or DHCPv4 client configuration on Windows 11, macOS,
