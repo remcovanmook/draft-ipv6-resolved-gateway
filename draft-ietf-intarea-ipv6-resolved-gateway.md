@@ -106,7 +106,20 @@ approaches (a new DHCPv4 option, or implicit behaviour when
 no router is specified) would both require DHCPv4 client
 changes across every OS implementation; given typical
 deployment timescales, meaningful coverage would take a decade
-at best. The sentinel address approach requires no changes to
+at best.
+
+The cost of a new DHCPv4 option is also not confined to client
+stacks. An operator's billing, provisioning, inventory,
+monitoring, NOC tooling and validation logic all encode what an
+IPv4 gateway looks like, and a new option changes that shape in
+every one of them at once. A sentinel address changes none of it:
+to every system that reads or stores a lease it is an ordinary
+IPv4 gateway address, syntactically and semantically valid, and
+it passes through unaltered. The only component that has to know
+the value is special is the host stack performing next-hop
+resolution.
+
+The sentinel address approach requires no changes to
 DHCPv4 clients or servers and is incrementally deployable
 today. Updated and unmodified hosts coexist on the same segment
 indefinitely, and a segment may be converted one host at a time.
