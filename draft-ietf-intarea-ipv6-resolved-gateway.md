@@ -37,6 +37,11 @@ normative:
   RFC8950:
 
 informative:
+  IANA-IPV4-SPECIAL:
+    target: https://www.iana.org/assignments/iana-ipv4-special-registry/
+    title: "IPv4 Special-Purpose Address Registry"
+    author:
+      - org: "IANA"
   RFC1027:
   RFC1122:
   I-D.ietf-intarea-v4-via-v6:
@@ -505,7 +510,8 @@ IETF Last Call.
 This document requests that IANA assign a single IPv4 address from
 the 192.0.0.0/24 IETF Protocol Assignments block in the
 "IANA IPv4 Special-Purpose Address Registry" {{RFC6890}}. The
-address `192.0.0.11/32` is suggested.
+address `192.0.0.11/32` is suggested. The registry's current
+contents are maintained by IANA at {{IANA-IPV4-SPECIAL}}.
 
 | Field                | Value                          |
 |----------------------|--------------------------------|
