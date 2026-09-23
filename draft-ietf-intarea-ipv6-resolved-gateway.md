@@ -42,6 +42,7 @@ informative:
   RFC1918:
   RFC1122:
   RFC2516:
+  RFC3046:
   RFC3442:
   RFC6877:
   RFC7217:
@@ -57,6 +58,7 @@ informative:
   I-D.ietf-intarea-v4-via-v6:
   RFC5737:
   RFC2132:
+  RFC3527:
   RFC3927:
   RFC6105:
   RFC7600:
@@ -866,6 +868,35 @@ first address seen persists. Where a global address is used, it
 MUST be a stable one: temporary addresses {{RFC8981}} are
 designed to rotate and are unsuitable as a next-hop identity.
 
+## DHCPv4 Relay Considerations
+
+A relay agent's interface toward the segment needs no IPv4
+address, since the segment carries no IPv4 prefix. The relay
+does need a routable IPv4 address for the giaddr field, but that
+address need not be on the segment: one loopback address per
+relaying router is sufficient, whatever the number of segments
+it relays for.
+
+Where giaddr would otherwise be conflated with address pool
+selection, the two are decoupled by the link selection
+sub-option {{RFC3527}}. In practice the need for this is
+reduced, because flat /32 pools largely dissolve the question of
+which pool serves which segment. Where segment identity is still
+wanted for policy or accounting, it is carried by the relay
+agent information option circuit identifier {{RFC3046}}.
+
+Relay agents that enforce on-link gateway validation may reject
+or flag `IPV4-SENTINEL` as an invalid Router Option value.
+Operators SHOULD verify relay agent behaviour in their
+deployment before relying on this mechanism.
+
+ICMPv4 messages sourced by a first-hop router on the segment use
+the sentinel and are interface-local (see {{ingress}}). ICMPv4
+generated further along the path, by IPv6-only transit routers
+with no interface-local sentinel to use, is a separate problem
+addressed by {{RFC7600}}, which allocates `192.0.0.8/32` for
+that purpose.
+
 ## Host Implementation Considerations
 
 Implementations in which IPv4 and IPv6 stacks are managed by
@@ -875,10 +906,6 @@ neighbor cache to the IPv4 forwarding path. This is an
 implementation consideration and does not affect the on-wire
 behavior defined in this document.
 
-DHCPv4 relay agents that enforce on-link gateway validation
-may reject or flag `IPV4-SENTINEL` as an invalid router option.
-Operators SHOULD verify relay agent behavior in their
-deployment before relying on this mechanism.
 
 # Security Considerations {#security-considerations}
 
