@@ -41,6 +41,7 @@ informative:
   RFC1027:
   RFC1122:
   RFC2516:
+  RFC3442:
   RFC8585:
   CALICO-FAQ:
     target: https://docs.tigera.io/calico/latest/reference/faq
@@ -278,10 +279,6 @@ IPv4 default gateway and cease IPv6-based resolution on that
 interface. For statically configured deployments, removal
 is governed by local administrative policy.
 
-Cross-interface resolution MUST NOT be performed. On multi-homed
-hosts, each interface independently resolves `IPV4-SENTINEL` against
-its own IPv6 neighbor cache state.
-
 The following pseudocode defines the resolution logic:
 
 ~~~
@@ -338,6 +335,59 @@ Implementations SHOULD bound this queue duration to avoid
 indefinite resource consumption. On queue timeout, packets
 SHOULD be dropped and an ICMPv4 Host Unreachable message
 MAY be generated toward the sending application.
+
+## Multi-Homed Hosts
+
+Cross-interface resolution MUST NOT be performed. On multi-homed
+hosts, each interface independently resolves `IPV4-SENTINEL`
+against its own IPv6 neighbor cache state.
+
+The sentinel is an interface-scoped next-hop token, not the
+address of a particular router. It denotes "the IPv6 default
+router on this interface" and carries no topological
+information. Two interfaces configured with the same value
+resolve it to two different link-layer addresses, by way of two
+different IPv6 default router lists. This is the property IPv6
+link-local next-hops already have, where a route is meaningful
+only together with the interface it is attached to.
+
+Every IPv4 route whose next hop is the sentinel is therefore a
+triple, not a pair:
+
+~~~
+(destination prefix, outgoing interface, via IPV4-SENTINEL)
+~~~
+
+A host holding a sentinel default route on each of two
+interfaces holds two distinct routes rather than a conflict:
+
+~~~
+0.0.0.0/0   dev if1   via IPV4-SENTINEL
+0.0.0.0/0   dev if2   via IPV4-SENTINEL
+~~~
+
+They are disambiguated exactly as the equivalent IPv6 routes
+with link-local next-hops are: by outgoing interface, and by
+whatever metric or policy the host already applies when choosing
+between two default routes. Resolution then proceeds per the
+algorithm above, independently on each interface, against that
+interface's own neighbor cache.
+
+DHCPv4 needs no extension to express this. A DHCPv4 client
+already keeps configuration per interface, and a lease obtained
+on one interface supplies the Router Option (Option 3) default
+for that interface alone. More specific routes are carried per
+interface in the same way, through the Classless Static Route
+Option (Option 121) {{RFC3442}}, whose router field accepts the
+sentinel as it would any other next-hop value. Both sides of the
+exchange are thus already interface-scoped; see
+{{implementation}} for demonstrations.
+
+Source address selection is unaffected by this mechanism. Once
+an egress interface has been selected, the host chooses a source
+address from that interface exactly as it does today. The
+sentinel is never a candidate source address and never appears
+in a forwarded packet (see {{ingress}}).
 
 # Router Behavior
 
@@ -397,7 +447,7 @@ IPv6 link-local: fe80::R2   IPv6: 2001:db8:2::2
 
 No ARP is exchanged at any point.
 
-## Router Ingress Behavior
+## Router Ingress Behavior {#ingress}
 
 Routers MUST treat `IPV4-SENTINEL` as an interface-scoped
 address, valid only on the interface on which it is
@@ -567,7 +617,7 @@ next-hop addresses, topology-independent identifiers that
 work on any segment without carrying subnet membership
 information. `IPV4-SENTINEL` provides the same property for IPv4.
 
-# Implementation Requirements
+# Implementation Requirements {#implementation}
 
 An implementation is conformant if it satisfies all MUST
 and MUST NOT requirements in Sections 4 and 5.
