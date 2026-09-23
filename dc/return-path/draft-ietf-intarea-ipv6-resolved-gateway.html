@@ -1,0 +1,2495 @@
+<!DOCTYPE html>
+<html lang="en" class="Internet-Draft">
+<head>
+<meta charset="utf-8">
+<meta content="Common,Latin" name="scripts">
+<meta content="initial-scale=1.0" name="viewport">
+<title>IPv6-Resolved IPv4 Gateway</title>
+<meta content="Remco van Mook" name="author">
+<meta content="
+       This document specifies host behavior enabling IPv4 communication
+for dual-stack hosts on IPv6-only segments, without subnets, ARP,
+tunneling, or translation. Provisioning is unchanged: a host
+obtains its IPv4 address and default gateway through ordinary,
+unmodified DHCPv4, or by static configuration. Only the gateway
+value changes. When that value is a reserved IPv4 sentinel
+address, the host resolves the next-hop link-layer address from
+the IPv6 neighbor cache rather than via ARP; no other aspect of
+IPv4 operation is altered. IPv4 packets are forwarded natively,
+end-to-end. The mechanism is incrementally deployable alongside
+unmodified hosts with no changes to DHCPv4 infrastructure. This
+document requests the allocation of one IPv4 address from
+192.0.0.0/24 in the IANA IPv4 Special-Purpose Address Registry to
+support this mechanism. 
+    " name="description">
+<meta content="xml2rfc 3.34.1" name="generator">
+<meta content="Internet-Draft" name="keyword">
+<meta content="draft-ietf-intarea-ipv6-resolved-gateway-latest" name="ietf.draft">
+<!-- Generator version information:
+  xml2rfc 3.34.1
+    Python 3.14.7
+    ConfigArgParse 1.7.7
+    google-i18n-address 3.1.1
+    intervaltree 3.2.1
+    Jinja2 3.1.6
+    lxml 6.1.1
+    natsort 8.4.0
+    platformdirs 4.11.10
+    pycountry 24.6.1
+    PyYAML 6.0.3
+    requests 2.33.1
+    wcwidth 0.8.4
+-->
+<link href="draft-ietf-intarea-ipv6-resolved-gateway.xml" rel="alternate" type="application/rfc+xml">
+<link href="#copyright" rel="license">
+<style type="text/css">@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Lora SemiBold'), local('Lora-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-semibold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-greek.woff2') format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-greek.woff2') format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  color-scheme: light dark;
+  --background-color: #fff;
+  --text-color: #222;
+  --title-color: #191919;
+  --link-color: #2a6496;
+  --highlight-color: #f9f9f9;
+  --line-color: #eee;
+  --pilcrow-weak: #ddd;
+  --pilcrow-strong: #bbb;
+  --small-font-size: 14.5px;
+  --font-mono: 'Oxygen Mono', monospace;
+  --font-title: "Sofia Sans Semi Condensed", sans-serif;
+  scrollbar-color: #bbb #eee;
+}
+body {
+  max-width: 600px;
+  margin: 75px auto;
+  padding: 0 5px;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  font: 16px/22px "Lora", serif;
+  scroll-behavior: smooth;
+}
+
+.ears {
+  display: none;
+}
+
+/* headings */
+section {
+  clear: both;
+}
+.section-number {
+  padding-right: 0.5em;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-title);
+  font-weight: 680;
+  margin: 0.8em 0 0.3em;
+  font-size-adjust: 0.5;
+  color: var(--title-color);
+}
+h1 {
+  &#title {
+    font-size: 32px;
+    line-height: 40px;
+    clear: both;
+    margin: 1.5em 0 0.2em;
+  }
+  &#rfcnum {
+    margin: 1.5em 0 0.2em;
+    & + h1#title {
+      margin: 0.2em 0;
+    }
+  }
+}
+
+h1, h2, h3 {
+  font-size: 22px;
+  line-height: 27px;
+}
+h4, h5, h6 {
+  font-size: 20px;
+  line-height: 24px;
+}
+
+/* general structure */
+.author {
+  padding-bottom: 0.3em;
+  vertical-align: top;
+}
+#abstract+p {
+  font-size: 18px;
+  line-height: 24px;
+  & code, & samp, & tt {
+    font-size: 16px;
+    line-height: 0;
+  }
+}
+
+p {
+  padding: 0;
+  margin: 0.5em 0;
+  text-align: left;
+}
+div {
+  margin: 0;
+}
+.alignRight {
+  margin: 1em 0;
+  &.art-text {
+    background-color: var(--highlight-color);
+    border: 1px solid var(--line-color);
+    border-radius: 3px;
+    padding: 0.5em 1em 0;
+    margin-bottom: 0.5em;
+    & pre {
+      padding: 0;
+      width: auto;
+    }
+  }
+  & > *:first-child {
+    border: none;
+    margin: 0;
+    float: right;
+    clear: both;
+  }
+  & > *:nth-child(2) {
+    clear: both;
+    display: block;
+    border: none;
+  }
+}
+svg {
+  display: block;
+  /* font-family isn't space-separated, but =~ will have to do */
+  &[font-family~="monospace" i], & [font-family~="monospace" i] {
+    font-family: var(--font-mono);
+  }
+}
+.alignCenter {
+  margin: 1em 0;
+  &.art-text {
+    background-color: var(--highlight-color);
+    border: 1px solid var(--line-color);
+    border-radius: 3px;
+    padding: 0.5em 1em 0;
+    margin-bottom: 0.5em;
+    & pre {
+      padding: 0;
+      width: auto;
+    }
+  }
+  & > *:first-child {
+    border: none;
+    /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
+       support flexbox yet.
+    */
+    display: table;
+    margin: 0 auto;
+  }
+}
+
+/* lists */
+ol, ul {
+  padding: 0;
+  margin: 0 0 0.5em 2em;
+  & :is(ol, ul) {
+    margin-left: 1em;
+  }
+}
+li {
+  margin: 0 0 0.25em 0;
+}
+ul.empty, .ulEmpty {
+  list-style-type: none;
+  & li {
+    margin-top: 0.5em;
+  }
+}
+:is(ul, ol).compact, .ulCompact, .olCompact {
+  margin: 0 0 0 2em;
+  & li {
+    margin: 0;
+    & :first-child { margin-top: 0; }
+    & :last-child { margin-bottom: 0; }
+  }
+}
+
+/* definition lists */
+dl {
+  clear: left;
+  --indent: 3ch;
+  /* --indent: attr(indent ch); not supported in any browser, but we can dream */
+  &.olPercent {
+    --indent: 5ch;
+    & > dt {
+      min-width: calc(var(--indent) - 2ch);
+      float: none;
+    }
+  }
+
+  dl > dd > & {
+    margin-top: 0.5em;
+    margin-bottom: 0;
+  }
+
+  &:not(.dlNewline) > dt {
+    float: left;
+    margin-right: 2ch;
+    min-width: 8ch;
+  }
+  & > dd {
+    margin-bottom: .8em;
+    margin-left: var(--indent) !important; /* stupid element overrides */
+    min-height: 2ex;
+  }
+}
+:is(dl.compact, .dlCompact) > dd {
+  margin-bottom: 0;
+  & > :is(:first-child, .break:first-child + *) {
+    margin-top: 0;
+  }
+  & > :is(:last-child) {
+    margin-bottom: 0;
+  }
+}
+:is(dd, span).break {
+  display: none;
+}
+
+/* links */
+a {
+  text-decoration: none;
+  &[href] {
+    color: var(--link-color);
+    &:hover { text-decoration: underline; }
+    &.selfRef {
+      color: var(--text-color);
+      &:hover {
+        text-decoration: none;
+        background-color: var(--highlight-color);
+      }
+    }
+  }
+}
+.iref + a[href].internal {
+  color: var(--text-color);
+}
+a.xref:is(.cite, .auto), :is(#status-of-memo, #copyright) a {
+  white-space: nowrap;
+}
+
+/* Figures */
+tt, code, pre {
+  background-color: var(--highlight-color);
+  font: 14px/22px var(--font-mono);
+}
+tt, code {
+  /* changing the font for inline elements leads to different ascender
+     and descender heights; as we want to retain baseline alignment,
+     remove leading to avoid altering the final height of lines
+     note: this fails if these blocks take an entire line,
+     a different solution would be great */
+  line-height: 0;
+}
+:is(h1, h2, h3, h4, h5, h6) :is(tt, code) {
+  font-size: 84%;
+}
+pre {
+  border: 1px solid var(--line-color);
+  font-size: 13.5px;
+  line-height: 16px;
+  letter-spacing: -0.2px;
+  margin: 5px;
+  padding: 5px;
+}
+img {
+  max-width: 100%;
+}
+figure {
+  margin: 0.5em 0;
+  padding: 0;
+  & blockquote {
+    margin: 0.8em 0.4em 0.4em;
+  }
+}
+figcaption, caption {
+  font-style: italic;
+  margin: 0.5em 1.5em;
+  text-align: left;
+  caption-side: bottom;
+}
+@media screen {
+  /* Auto-collapse boilerplate. */
+  :is(#status-of-memo, #copyright) {
+    & p {
+      margin: -2px 0;
+      max-height: 0;
+      transition: max-height 2s ease, margin 0.5s ease 0.5s;
+      overflow: hidden;
+    }
+    &:hover p,
+    & h2:target ~ p {
+      margin: 0.5em 0;
+      max-height: 500px;
+      overflow: auto;
+    }
+  }
+  pre, svg {
+    display: inline-block;
+    /* In the horizontal direction, sometimes people make over-sized figures.
+       Scrollbars for those is therefore necessary: auto adds them as necessary..
+       In the vertical direction, the line-height can combine with the font
+       asender/descender height to produce scrollbars: hidden avoids that. */
+    overflow: auto hidden;
+  }
+  pre {
+    max-width: 100%;
+    width: calc(100% - 22px - 1em);
+  }
+  svg {
+    max-width: calc(100% - 22px - 1em);
+  }
+  figure pre {
+    display: block;
+    width: calc(100% - 25px);
+  }
+  :is(pre, svg) + .pilcrow {
+    display: inline-block;
+    vertical-align: text-bottom;
+    padding-bottom: 8px;
+  }
+}
+
+/* aside, blockquote */
+aside, blockquote {
+  margin-left: 0;
+  padding: 0 2em;
+  font-style: italic;
+}
+blockquote {
+  margin: 1em 0;
+  border-left: 2px var(--pilcrow-strong) solid;
+}
+cite {
+  display: block;
+  text-align: right;
+  font-style: italic;
+}
+
+/* tables */
+table {
+  width: auto;
+  max-width: 100%;
+  margin: 0 0 1em;
+  border-collapse: collapse;
+  &.right { margin-left: auto; }
+  &.center { margin-left: auto; margin-right: auto; }
+  &.left { margin-right: auto; }
+  & .text-left { text-align: left; }
+  & .text-center { text-align: center; }
+  & .text-right { text-align: right; }
+  & caption {
+    margin: 0;
+    padding: 3px 0 3px 1em;
+  }
+  & p { margin: 0; }
+}
+
+thead, tbody {
+  border: 1px solid var(--line-color);
+}
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 5px 10px;
+}
+th {
+  background-color: var(--line-color);
+}
+:is(tr:nth-child(2n), thead+tbody > tr:nth-child(2n+1)) > td {
+  background-color: var(--background-color);
+}
+:is(tr:nth-child(2n+1), thead+tbody > tr:nth-child(2n)) > td {
+  background-color: var(--highlight-color);
+}
+
+/* pilcrow */
+a.pilcrow {
+  margin-left: 3px;
+  opacity: 0.2;
+  user-select: none;
+  &[href] {
+    color: var(--pilcrow-weak);
+    &:hover { text-decoration: none; }
+  }
+  @media not print {
+    :hover > &, &:focus {
+      opacity: 1;
+    }
+    &[href]:hover {
+      color: var(--pilcrow-strong);
+      background-color: transparent;
+    }
+  }
+  @media print {
+    display: none;
+  }
+}
+
+/* misc */
+hr {
+  border: 0;
+  border-top: 1px solid var(--line-color);
+}
+.bcp14 {
+  font-variant: small-caps;
+  font-weight: 600;
+  font-size: var(--small-font-size);
+}
+.role {
+  font-variant: all-small-caps;
+}
+sub, sup {
+  line-height: 1;
+  font-size: 80%;
+}
+
+/* info block */
+#identifiers {
+  margin: 0;
+  font-size: var(--small-font-size);
+  line-height: 18px;
+  --identifier-width: 15ch;
+  & dt {
+    width: var(--identifier-width);
+    min-width: var(--identifier-width);
+    clear: left;
+    float: left;
+    text-align: right;
+    margin-right: 1ch;
+  }
+  & dd {
+    margin: 0;
+    margin-left: calc(1em + var(--identifier-width)) !important;
+    min-width: 5em;
+  }
+  & .authors {
+    & .author {
+      display: inline-block;
+      margin-right: 1.5em;
+    }
+    & .org {
+      font-style: italic;
+    }
+  }
+}
+
+/* The prepared/rendered info at the very bottom of the page */
+.docInfo {
+  color: #999;
+  font-size: 0.9em;
+  font-style: italic;
+  margin-top: 2em;
+  & .prepared {
+    float: right;
+  }
+}
+
+/* table of contents */
+#toc {
+  padding: 0.75em 0 2em 0;
+  margin-bottom: 1em;
+
+  & nav {
+    & ul {
+      margin: 0 0.5em 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    & li {
+      line-height: 1.3em;
+      margin: 2px 0;
+      padding-left: 1.2em;
+      text-indent: -1.2em;
+    }
+  }
+  & a.xref {
+    white-space: normal;
+  }
+}
+
+.references {
+  & > dt {
+    text-align: right;
+    font-weight: bold;
+    min-width: 10ch;
+    margin-right: 1.5ch;
+    &:target::before {
+      content: "⇒";
+      margin: 0 10px 0 -25px;
+    }
+  }
+  & > dd {
+    margin-left: 12ch !important;
+    overflow: visible;
+    & .refInstance {
+      margin-bottom: 0.8em;
+    }
+    & .ascii {
+      margin-bottom: 0.25em;
+    }
+  }
+}
+
+#rfc\.index\.index + ul {
+  margin-left: 0;
+}
+
+/* authors */
+address.vcard {
+  font-style: normal;
+  max-width: 20em;
+  margin: 1em auto 1em 0;
+
+  & .nameRole {
+    font-weight: 700;
+    margin-left: 0;
+  }
+  & .label {
+    margin: 0.5em 0;
+  }
+  & .type {
+    display: none;
+  }
+  & .alternative-contact {
+    margin: 0.5em 0 0.25em 0;
+  }
+  & .non-ascii {
+    margin: 0 0 0 2em;
+  }
+  & div.left {
+    text-align: left;
+  }
+  & div.right {
+    text-align: right;
+  }
+}
+
+hr.addr {
+  border-top: 1px dashed;
+  margin: 0;
+  color: #ddd;
+  max-width: calc(100% - 16px);
+}
+@media (min-width: 500px) {
+  #authors-addresses {
+    & > section {
+      column-count: 2;
+      column-gap: 20px;
+    }
+    & > section > h2 {
+      column-span: all;
+    }
+    /* hack for break-inside: avoid-column */
+    & address {
+      display: inline-block;
+      break-inside: avoid-column;
+    }
+  }
+}
+
+/* Comments */
+.rfcEditorRemove {
+  & p:first-of-type {
+    font-style: italic;
+  }
+}
+.cref {
+  background-color: rgba(249, 232, 105, 0.3);
+  padding: 2px 4px;
+}
+.crefSource {
+  font-style: italic;
+}
+
+@media screen {
+  #toc {
+    & nav {
+      font-family: var(--font-title);
+      font-weight: 360;
+      & > ul { margin-bottom: 2em; }
+      & ul {
+        margin: 0 0 0 4px;
+        & :is(p, li) {
+          margin: 2px 0;
+        }
+      }
+    }
+    & a.toplink {
+      float: right;
+    }
+  }
+}
+@media not screen {
+  #toc a.toplink {
+    display: none;
+  }
+}
+
+
+/* TOC layout for smaller screens */
+@media screen and (max-width: 929px) {
+  #toc {
+    position: fixed;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    padding: 1px 0 0 0;
+    margin: 0;
+    border-bottom: 1px solid #ccc;
+    opacity: 0.6;
+    & h2 {
+      margin: 0;
+      padding: 2px 0 2px 6px;
+      padding-right: 1em;
+      font-size: 18px;
+      line-height: 24px;
+      min-width: 190px;
+      text-align: right;
+      background-color: #444;
+      color: white;
+      cursor: pointer;
+      &::before { /* css hamburger */
+        float: right;
+        position: relative;
+        width: 1em;
+        height: 1px;
+        left: -164px;
+        margin: 8px 0 0 0;
+        background: white none repeat scroll 0 0;
+        box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+        content: "";
+      }
+    }
+    & nav {
+      display: none;
+      background-color: var(--background-color);
+      padding: 0.5em 1em 1em;
+      overflow: auto;
+      overscroll-behavior: contain;
+      height: calc(100vh - 48px);
+      border-left: 1px solid #ddd;
+    }
+    &.active {
+      opacity: 1;
+      & nav { display: block; }
+    }
+    /* Make the collapsed ToC header render white on gray also when it's a link */
+    & h2 a,
+    & h2 a:is(:link, :focus, :hover),
+    & a.toplink,
+    & a.toplink:hover {
+      color: white;
+      background-color: #444;
+      text-decoration: none;
+    }
+    & a.toplink {
+      margin: 2px 0.5em 0;
+    }
+  }
+}
+
+/* TOC layout for wide screens */
+@media screen and (min-width: 930px) {
+  body {
+    padding-right: 360px;
+    padding-right: calc(min(180px + 20%, 500px));
+  }
+  #toc {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    right: calc(50vw - 480px);
+    width: 312px;
+    margin: 0;
+    padding: 0;
+    z-index: 1;
+    & h2 {
+      margin: 0;
+      padding: 0.25em 1em 1em 0;
+    }
+    & nav {
+      display: block;
+      height: calc(90vh - 84px);
+      bottom: 0;
+      padding: 0.5em 0 2em;
+      overflow: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+    }
+    & a.toplink {
+      margin: 8px 0.5em 0;
+    }
+  }
+  img { /* future proofing */
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* pagination */
+@media print {
+  body {
+    width: 100%;
+  }
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+  #n-copyright-notice {
+    border-bottom: none;
+  }
+  #toc {
+    page-break-before: always;
+    border-top: none;
+    padding-top: 0;
+  }
+  #n-introduction {
+    page-break-before: always;
+  }
+  figure, pre, .vcard {
+    page-break-inside: avoid;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+  :is(h2, h3, h4, h5, h6)+*, dd {
+    page-break-before: avoid;
+  }
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 10pt;
+  }
+  table {
+    border: 1px solid #ddd;
+  }
+  td {
+    border-top: 1px solid #ddd;
+  }
+}
+
+@page :first {
+  padding-top: 0;
+  @top-left {
+    content: normal;
+    border: none;
+  }
+  @top-center {
+    content: normal;
+    border: none;
+  }
+  @top-right {
+    content: normal;
+    border: none;
+  }
+}
+
+@page {
+  size: A4;
+  margin-bottom: 45mm;
+  padding-top: 20px;
+}
+
+/* Dark mode. */
+@media (prefers-color-scheme: dark) {
+:root {
+  --background-color: #121212;
+  --text-color: #f0f0f0;
+  --title-color: #fff;
+  --link-color: #4da4f0;
+  --highlight-color: #282828;
+  --line-color: #444;
+  --pilcrow-weak: #444;
+  --pilcrow-strong: #666;
+  scrollbar-color: #777 #333;
+}
+}
+
+/* SVG Trick: a prefix match works because only black and white are allowed */
+svg {
+  & :is([stroke="black"], [stroke^="#000"]) {
+    stroke: var(--text-color);
+  }
+  & :is([stroke="white"], [stroke^="#fff"]) {
+    stroke: var(--background-color);
+  }
+  & :is([fill="black"], [fill^="#000"], :not([fill])) {
+    fill: var(--text-color);
+  }
+  & :is([fill="white"], [fill^="#fff"]) {
+    fill: var(--background-color);
+  }
+}
+</style>
+
+</head>
+<body class="xml2rfc">
+<table class="ears">
+<thead><tr>
+<td class="left">Internet-Draft</td>
+<td class="center">IPv6-Resolved IPv4 GW</td>
+<td class="right">August 2026</td>
+</tr></thead>
+<tfoot><tr>
+<td class="left">van Mook</td>
+<td class="center">Expires 28 February 2027</td>
+<td class="right">[Page]</td>
+</tr></tfoot>
+</table>
+<div id="external-metadata" class="document-information"></div>
+<div id="internal-metadata" class="document-information">
+<dl id="identifiers">
+<dt class="label-workgroup">Workgroup:</dt>
+<dd class="workgroup">Internet Area Working Group</dd>
+<dt class="label-internet-draft">Internet-Draft:</dt>
+<dd class="internet-draft">draft-ietf-intarea-ipv6-resolved-gateway-latest</dd>
+<dt class="label-published">Published:</dt>
+<dd class="published">
+<time datetime="2026-08-27" class="published">27 August 2026</time>
+    </dd>
+<dt class="label-intended-status">Intended Status:</dt>
+<dd class="intended-status">Standards Track</dd>
+<dt class="label-expires">Expires:</dt>
+<dd class="expires"><time datetime="2027-02-28">28 February 2027</time></dd>
+<dt class="label-authors">Author:</dt>
+<dd class="authors">
+<div class="author">
+      <div class="author-name">R. van Mook</div>
+<div class="org">Asteroid International B.V.</div>
+</div>
+</dd>
+</dl>
+</div>
+<h1 id="title">IPv6-Resolved IPv4 Gateway</h1>
+<section id="section-abstract">
+      <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
+<p id="section-abstract-1">This document specifies host behavior enabling IPv4 communication
+for dual-stack hosts on IPv6-only segments, without subnets, ARP,
+tunneling, or translation. Provisioning is unchanged: a host
+obtains its IPv4 address and default gateway through ordinary,
+unmodified DHCPv4, or by static configuration. Only the gateway
+value changes. When that value is a reserved IPv4 sentinel
+address, the host resolves the next-hop link-layer address from
+the IPv6 neighbor cache rather than via ARP; no other aspect of
+IPv4 operation is altered. IPv4 packets are forwarded natively,
+end-to-end. The mechanism is incrementally deployable alongside
+unmodified hosts with no changes to DHCPv4 infrastructure. This
+document requests the allocation of one IPv4 address from
+192.0.0.0/24 in the IANA IPv4 Special-Purpose Address Registry to
+support this mechanism.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+</section>
+<section class="note rfcEditorRemove" id="section-note.1">
+      <h2 id="name-about-this-document">
+<a href="#name-about-this-document" class="section-name selfRef">About This Document</a>
+      </h2>
+<p id="section-note.1-1">This note is to be removed before publishing as an RFC.<a href="#section-note.1-1" class="pilcrow">¶</a></p>
+<p id="section-note.1-2">
+        The latest revision of this draft can be found at <span><a href="https://remcovanmook.github.io/draft-ipv6-resolved-gateway/draft-ietf-intarea-ipv6-resolved-gateway.html">https://remcovanmook.github.io/draft-ipv6-resolved-gateway/draft-ietf-intarea-ipv6-resolved-gateway.html</a></span>.
+        Status information for this document may be found at <span><a href="https://datatracker.ietf.org/doc/draft-ietf-intarea-ipv6-resolved-gateway/">https://datatracker.ietf.org/doc/draft-ietf-intarea-ipv6-resolved-gateway/</a></span>.<a href="#section-note.1-2" class="pilcrow">¶</a></p>
+<p id="section-note.1-3">
+        Discussion of this document takes place on the
+        Internet Area Working Group mailing list (<span><a href="mailto:int-area@ietf.org">mailto:int-area@ietf.org</a></span>),
+        which is archived at <span><a href="https://mailarchive.ietf.org/arch/browse/int-area/">https://mailarchive.ietf.org/arch/browse/int-area/</a></span>.
+        Subscribe at <span><a href="https://www.ietf.org/mailman/listinfo/int-area/">https://www.ietf.org/mailman/listinfo/int-area/</a></span>.<a href="#section-note.1-3" class="pilcrow">¶</a></p>
+<p id="section-note.1-4">Source for this draft and an issue tracker can be found at
+        <span><a href="https://github.com/remcovanmook/draft-ipv6-resolved-gateway">https://github.com/remcovanmook/draft-ipv6-resolved-gateway</a></span>.<a href="#section-note.1-4" class="pilcrow">¶</a></p>
+</section>
+<div id="status-of-memo">
+<section id="section-boilerplate.1">
+        <h2 id="name-status-of-this-memo">
+<a href="#name-status-of-this-memo" class="section-name selfRef">Status of This Memo</a>
+        </h2>
+<p id="section-boilerplate.1-1">
+        This Internet-Draft is submitted in full conformance with the
+        provisions of BCP 78 and BCP 79.<a href="#section-boilerplate.1-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-2">
+        Internet-Drafts are working documents of the Internet Engineering Task
+        Force (IETF). Note that other groups may also distribute working
+        documents as Internet-Drafts. The list of current Internet-Drafts is
+        at <span><a href="https://datatracker.ietf.org/drafts/current/">https://datatracker.ietf.org/drafts/current/</a></span>.<a href="#section-boilerplate.1-2" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-3">
+        Internet-Drafts are draft documents valid for a maximum of six months
+        and may be updated, replaced, or obsoleted by other documents at any
+        time. It is inappropriate to use Internet-Drafts as reference
+        material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-4">
+        This Internet-Draft will expire on 28 February 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="copyright">
+<section id="section-boilerplate.2">
+        <h2 id="name-copyright-notice">
+<a href="#name-copyright-notice" class="section-name selfRef">Copyright Notice</a>
+        </h2>
+<p id="section-boilerplate.2-1">
+            Copyright (c) 2026 IETF Trust and the persons identified as the
+            document authors. All rights reserved.<a href="#section-boilerplate.2-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<span><a href="https://trustee.ietf.org/license-info">https://trustee.ietf.org/license-info</a></span>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.<a href="#section-boilerplate.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="toc">
+<section id="section-toc.1">
+        <a href="#" onclick="scroll(0,0)" class="toplink">▲</a><h2 id="name-table-of-contents">
+<a href="#name-table-of-contents" class="section-name selfRef">Table of Contents</a>
+        </h2>
+<nav class="toc"><ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1">
+            <p id="section-toc.1-1.1.1" class="keepWithNext"><a href="#section-1" class="auto internal xref">1</a>.  <a href="#name-introduction" class="internal xref">Introduction</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.1">
+                <p id="section-toc.1-1.1.2.1.1" class="keepWithNext"><a href="#section-1.1" class="auto internal xref">1.1</a>.  <a href="#name-related-work" class="internal xref">Related Work</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2">
+            <p id="section-toc.1-1.2.1" class="keepWithNext"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-conventions-and-definitions" class="internal xref">Conventions and Definitions</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3">
+            <p id="section-toc.1-1.3.1"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-problem-statement" class="internal xref">Problem Statement</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4">
+            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-host-behavior-and-next-hop-" class="internal xref">Host Behavior and Next-Hop Resolution</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.1">
+                <p id="section-toc.1-1.4.2.1.1"><a href="#section-4.1" class="auto internal xref">4.1</a>.  <a href="#name-multi-homed-hosts" class="internal xref">Multi-Homed Hosts</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5">
+            <p id="section-toc.1-1.5.1"><a href="#section-5" class="auto internal xref">5</a>.  <a href="#name-router-behavior" class="internal xref">Router Behavior</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.1">
+                <p id="section-toc.1-1.5.2.1.1"><a href="#section-5.1" class="auto internal xref">5.1</a>.  <a href="#name-end-to-end-packet-flow" class="internal xref">End-to-End Packet Flow</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.2">
+                <p id="section-toc.1-1.5.2.2.1"><a href="#section-5.2" class="auto internal xref">5.2</a>.  <a href="#name-router-to-host-binding-dura" class="internal xref">Router-to-Host Binding Durability</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.3">
+                <p id="section-toc.1-1.5.2.3.1"><a href="#section-5.3" class="auto internal xref">5.3</a>.  <a href="#name-router-ingress-behavior" class="internal xref">Router Ingress Behavior</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.4">
+                <p id="section-toc.1-1.5.2.4.1"><a href="#section-5.4" class="auto internal xref">5.4</a>.  <a href="#name-backward-compatibility-rout" class="internal xref">Backward Compatibility: Router ARP Response</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6">
+            <p id="section-toc.1-1.6.1"><a href="#section-6" class="auto internal xref">6</a>.  <a href="#name-deployment-considerations" class="internal xref">Deployment Considerations</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1">
+                <p id="section-toc.1-1.6.2.1.1"><a href="#section-6.1" class="auto internal xref">6.1</a>.  <a href="#name-applicability" class="internal xref">Applicability</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.2">
+                <p id="section-toc.1-1.6.2.2.1"><a href="#section-6.2" class="auto internal xref">6.2</a>.  <a href="#name-relationship-to-other-trans" class="internal xref">Relationship to Other Transition Mechanisms</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.3">
+                <p id="section-toc.1-1.6.2.3.1"><a href="#section-6.3" class="auto internal xref">6.3</a>.  <a href="#name-access-provider-deployments" class="internal xref">Access Provider Deployments</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.4">
+                <p id="section-toc.1-1.6.2.4.1"><a href="#section-6.4" class="auto internal xref">6.4</a>.  <a href="#name-neighbor-discovery-prerequi" class="internal xref">Neighbor Discovery Prerequisites</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.5">
+                <p id="section-toc.1-1.6.2.5.1"><a href="#section-6.5" class="auto internal xref">6.5</a>.  <a href="#name-intra-segment-traffic" class="internal xref">Intra-Segment Traffic</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.6">
+                <p id="section-toc.1-1.6.2.6.1"><a href="#section-6.6" class="auto internal xref">6.6</a>.  <a href="#name-layer-2-integrity-features" class="internal xref">Layer 2 Integrity Features</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.7">
+                <p id="section-toc.1-1.6.2.7.1"><a href="#section-6.7" class="auto internal xref">6.7</a>.  <a href="#name-multiple-gateways-and-redun" class="internal xref">Multiple Gateways and Redundancy</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.8">
+                <p id="section-toc.1-1.6.2.8.1"><a href="#section-6.8" class="auto internal xref">6.8</a>.  <a href="#name-first-hop-failover-pacing" class="internal xref">First-Hop Failover Pacing</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.9">
+                <p id="section-toc.1-1.6.2.9.1"><a href="#section-6.9" class="auto internal xref">6.9</a>.  <a href="#name-return-path-provisioning" class="internal xref">Return Path Provisioning</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.10">
+                <p id="section-toc.1-1.6.2.10.1"><a href="#section-6.10" class="auto internal xref">6.10</a>. <a href="#name-dhcpv4-relay-considerations" class="internal xref">DHCPv4 Relay Considerations</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.11">
+                <p id="section-toc.1-1.6.2.11.1"><a href="#section-6.11" class="auto internal xref">6.11</a>. <a href="#name-host-implementation-conside" class="internal xref">Host Implementation Considerations</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7">
+            <p id="section-toc.1-1.7.1"><a href="#section-7" class="auto internal xref">7</a>.  <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.1">
+                <p id="section-toc.1-1.7.2.1.1"><a href="#section-7.1" class="auto internal xref">7.1</a>.  <a href="#name-arp-attack-surface-reductio" class="internal xref">ARP Attack Surface Reduction</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.2">
+                <p id="section-toc.1-1.7.2.2.1"><a href="#section-7.2" class="auto internal xref">7.2</a>.  <a href="#name-universal-gateway-address" class="internal xref">Universal Gateway Address</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8">
+            <p id="section-toc.1-1.8.1"><a href="#section-8" class="auto internal xref">8</a>.  <a href="#name-implementation-requirements" class="internal xref">Implementation Requirements</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9">
+            <p id="section-toc.1-1.9.1"><a href="#section-9" class="auto internal xref">9</a>.  <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10">
+            <p id="section-toc.1-1.10.1"><a href="#section-10" class="auto internal xref">10</a>. <a href="#name-references" class="internal xref">References</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10.2.1">
+                <p id="section-toc.1-1.10.2.1.1"><a href="#section-10.1" class="auto internal xref">10.1</a>.  <a href="#name-normative-references" class="internal xref">Normative References</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10.2.2">
+                <p id="section-toc.1-1.10.2.2.1"><a href="#section-10.2" class="auto internal xref">10.2</a>.  <a href="#name-informative-references" class="internal xref">Informative References</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11">
+            <p id="section-toc.1-1.11.1"><a href="#appendix-A" class="auto internal xref">Appendix A</a>.  <a href="#name-acknowledgements" class="internal xref">Acknowledgements</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12">
+            <p id="section-toc.1-1.12.1"><a href="#appendix-B" class="auto internal xref"></a><a href="#name-authors-address" class="internal xref">Author's Address</a></p>
+</li>
+        </ul>
+</nav>
+</section>
+</div>
+<div id="introduction">
+<section id="section-1">
+      <h2 id="name-introduction">
+<a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
+      </h2>
+<p id="section-1-1">An IPv4 address functions as a service endpoint identifier --
+either for a client seeking access to a service, or a server
+providing one. The BSD socket API, present in virtually every
+operating system and language runtime, expresses this directly:
+a call to <code>connect(AF_INET, "192.0.2.1", 80)</code> is a statement
+about which service to reach, not about routing or link-layer
+resolution. The host implements IPv4 natively;
+routers recognise and forward IPv4 packets and will continue to
+do so. What this document changes is solely how the host resolves
+the link-layer next-hop for the first hop.<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-2">Networks transitioning to IPv6-only segments still need to carry
+IPv4 traffic for dual-stack hosts. Traditional mechanisms such as
+dual-stack, tunneling, and translation all reintroduce IPv4 at
+the infrastructure level. This document defines a sentinel
+IPv4 address, <code>IPV4-SENTINEL</code>, that signals to a host stack that
+link-layer resolution for the IPv4 default gateway is derived
+from the link-layer address entry for the IPv6 default router in
+the neighbor cache <span>[<a href="#RFC4861" class="cite xref">RFC4861</a>]</span>, rather than via ARP. The IPv4
+routing table entry is unchanged; only the next-hop resolution
+path is modified. This eliminates the need for IPv4 subnets and
+ARP on the local segment, removing the requirement for tunneling
+or translation at the first hop.<a href="#section-1-2" class="pilcrow">¶</a></p>
+<p id="section-1-3">This problem is already being solved in production, but
+inconsistently. Hosting providers including Hetzner, OVH, and
+Scaleway independently deploy /32 host addresses with off-link
+IPv4 gateways using per-OS workarounds (Linux pointopoint, netplan
+on-link: true, explicit post-up routes). None of this is
+documented in any RFC, and the implementations are not
+interoperable across providers. This draft standardises the
+pattern with a single sentinel address that host stacks can
+implement natively. Alternative
+approaches (a new DHCPv4 option, or implicit behaviour when
+no router is specified) would both require DHCPv4 client
+changes across every OS implementation; given typical
+deployment timescales, meaningful coverage would take a decade
+at best.<a href="#section-1-3" class="pilcrow">¶</a></p>
+<p id="section-1-4">The cost of a new DHCPv4 option is also not confined to client
+stacks. An operator's billing, provisioning, inventory,
+monitoring, NOC tooling and validation logic all encode what an
+IPv4 gateway looks like, and a new option changes that shape in
+every one of them at once. A sentinel address changes none of it:
+to every system that reads or stores a lease it is an ordinary
+IPv4 gateway address, syntactically and semantically valid, and
+it passes through unaltered. The only component that has to know
+the value is special is the host stack performing next-hop
+resolution.<a href="#section-1-4" class="pilcrow">¶</a></p>
+<p id="section-1-5">The sentinel address approach requires no changes to
+DHCPv4 clients or servers and is incrementally deployable
+today. Updated and unmodified hosts coexist on the same segment
+indefinitely, and a segment may be converted one host at a time.
+There is no flag day or mandatory switch-over point.<a href="#section-1-5" class="pilcrow">¶</a></p>
+<p id="section-1-6">The mechanism has been verified to work without changes to
+applications or DHCPv4 client configuration on Windows 11, macOS,
+Android, iOS, Linux, FreeBSD, and ChromeOS.<a href="#section-1-6" class="pilcrow">¶</a></p>
+<p id="section-1-7">This document addresses the host-side first-hop gap left open
+by <span>[<a href="#I-D.ietf-intarea-v4-via-v6" class="cite xref">I-D.ietf-intarea-v4-via-v6</a>]</span>, which defines router-to-router
+forwarding of IPv4 traffic over IPv6 next-hops. Together, the
+two documents provide a complete solution: hosts reach their
+first-hop router without ARP, and routers forward IPv4 traffic
+across an IPv6-only infrastructure without IPv4 addresses on
+any router interface.<a href="#section-1-7" class="pilcrow">¶</a></p>
+<div id="related-work">
+<section id="section-1.1">
+        <h3 id="name-related-work">
+<a href="#section-1.1" class="section-number selfRef">1.1. </a><a href="#name-related-work" class="section-name selfRef">Related Work</a>
+        </h3>
+<p id="section-1.1-1">The underlying pattern -- a first-hop IPv4 gateway that is not
+resolved by ordinary ARP against a shared on-link subnet -- has
+been independently reinvented many times, in mutually
+incompatible forms.<a href="#section-1.1-1" class="pilcrow">¶</a></p>
+<p id="section-1.1-2">Proxy ARP <span>[<a href="#RFC925" class="cite xref">RFC925</a>]</span> <span>[<a href="#RFC1027" class="cite xref">RFC1027</a>]</span> had a router answer ARP on
+behalf of addresses that were not on the requesting host's link.
+Point-to-point access architectures, among them PPPoE
+<span>[<a href="#RFC2516" class="cite xref">RFC2516</a>]</span> and 3GPP bearers, deliver an IPv4 address to a
+terminal over a link with no subnet and no neighbor resolution
+at all. The softwires IPv4-as-a-Service family <span>[<a href="#RFC8585" class="cite xref">RFC8585</a>]</span>
+carries IPv4 service across an IPv6-only access network to the
+customer edge. Container networking reached the same shape
+independently: Calico gives each workload a next-hop of
+<code>169.254.1.1</code> that is never assigned to any interface and exists
+only to be answered by proxy ARP on the host side of the
+interface pair <span>[<a href="#CALICO-FAQ" class="cite xref">CALICO-FAQ</a>]</span>. The hosting-provider /32
+configurations described above are a further instance, as are
+the pre-standard arrangements for routing IPv4 over IPv6
+next-hops that preceded <span>[<a href="#RFC8950" class="cite xref">RFC8950</a>]</span>.<a href="#section-1.1-2" class="pilcrow">¶</a></p>
+<p id="section-1.1-3">Each of these is the same idea, constrained to one domain, and
+each was previously kept there by a condition that has since
+expired. There was no standardised transport for IPv4 routes
+with IPv6 next-hops before <span>[<a href="#RFC8950" class="cite xref">RFC8950</a>]</span>. Host stacks were treated
+as unchangeable, an assumption disproved by the deployment of
+<span>[<a href="#RFC8925" class="cite xref">RFC8925</a>]</span> Option 108 and of CLAT across mainstream operating
+systems. Every prior instance lived inside a walled domain -- a
+single vendor, access technology, or orchestrator -- and so
+never needed an interoperable code point. And IPv4 service on an
+IPv6-only network was generally assumed to call for translation.<a href="#section-1.1-3" class="pilcrow">¶</a></p>
+<p id="section-1.1-4">Those conditions no longer hold. The contribution of this
+document is therefore not a new mechanism, but a general and
+interoperable form of one that has repeatedly been built in
+private and left undocumented.<a href="#section-1.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="conventions-and-definitions">
+<section id="section-2">
+      <h2 id="name-conventions-and-definitions">
+<a href="#section-2" class="section-number selfRef">2. </a><a href="#name-conventions-and-definitions" class="section-name selfRef">Conventions and Definitions</a>
+      </h2>
+<p id="section-2-1">The key words "<span class="bcp14">MUST</span>", "<span class="bcp14">MUST NOT</span>", "<span class="bcp14">REQUIRED</span>", "<span class="bcp14">SHALL</span>", "<span class="bcp14">SHALL NOT</span>", "<span class="bcp14">SHOULD</span>", "<span class="bcp14">SHOULD NOT</span>", "<span class="bcp14">RECOMMENDED</span>", "<span class="bcp14">NOT RECOMMENDED</span>",
+"<span class="bcp14">MAY</span>", and "<span class="bcp14">OPTIONAL</span>" in this document are to be interpreted as
+described in BCP 14 <span>[<a href="#RFC2119" class="cite xref">RFC2119</a>]</span> <span>[<a href="#RFC8174" class="cite xref">RFC8174</a>]</span> when, and only when, they
+appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶</a></p>
+<p id="section-2-2">This document uses the symbolic name <code>IPV4-SENTINEL</code> for the IPv4
+sentinel address whose allocation is requested in <a href="#iana" class="auto internal xref">Section 9</a>. The
+allocated value is not yet assigned; <code>IPV4-SENTINEL</code> denotes
+whatever value IANA assigns.<a href="#section-2-2" class="pilcrow">¶</a></p>
+<p id="section-2-3">[RFC Editor: please replace all occurrences of <code>IPV4-SENTINEL</code>
+with the IPv4 address assigned by IANA (TBD1), and remove this
+note.]<a href="#section-2-3" class="pilcrow">¶</a></p>
+<p id="section-2-4">Where a concrete value is needed for illustration, examples and
+figures in this document use <code>192.0.2.11</code>, drawn from the
+TEST-NET-1 documentation range <span>[<a href="#RFC5737" class="cite xref">RFC5737</a>]</span>. That value is
+illustrative only; it is not the requested allocation and has no
+special meaning.<a href="#section-2-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="problem-statement">
+<section id="section-3">
+      <h2 id="name-problem-statement">
+<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-problem-statement" class="section-name selfRef">Problem Statement</a>
+      </h2>
+<p id="section-3-1">IPv4 next-hop resolution on a local link depends on ARP, which
+requires an IPv4 subnet to be configured on the link. In an
+IPv6-only segment, no such subnet exists. Existing solutions
+-- dual-stack, tunneling, and translation-based approaches
+such as NAT64 -- generally require changes beyond the local
+segment. This document closes the first-hop resolution gap
+for dual-stack hosts on IPv6-only segments without requiring
+changes to host software, packet formats, or DHCPv4 clients.<a href="#section-3-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="host-behavior">
+<section id="section-4">
+      <h2 id="name-host-behavior-and-next-hop-">
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-host-behavior-and-next-hop-" class="section-name selfRef">Host Behavior and Next-Hop Resolution</a>
+      </h2>
+<p id="section-4-1">This mechanism activates only when a functional IPv6
+implementation is present on the same interface, sufficient
+to perform Neighbor Discovery per <span>[<a href="#RFC4861" class="cite xref">RFC4861</a>]</span> and process
+Router Advertisements. Without IPv6 on the interface, the
+sentinel address has no effect and the host continues to
+behave as if no gateway were configured.<a href="#section-4-1" class="pilcrow">¶</a></p>
+<p id="section-4-2">For the outbound path, link-local IPv6 operation is sufficient.
+For return traffic to reach the host via the
+<span>[<a href="#I-D.ietf-intarea-v4-via-v6" class="cite xref">I-D.ietf-intarea-v4-via-v6</a>]</span> forwarding model, the first-hop
+router must advertise the host's /32 route with a routable IPv6
+next-hop (GUA or ULA); a link-local address is not valid as an
+inter-router next-hop. Operators deploying this mechanism in
+conjunction with <span>[<a href="#I-D.ietf-intarea-v4-via-v6" class="cite xref">I-D.ietf-intarea-v4-via-v6</a>]</span> <span class="bcp14">MUST</span> therefore
+ensure the host has a routable IPv6 address on the interface.<a href="#section-4-2" class="pilcrow">¶</a></p>
+<p id="section-4-3">A host implementing this mechanism <span class="bcp14">SHOULD</span> be configured with a
+/32 prefix length for its IPv4 address. With a broader prefix,
+the host will continue to ARP for addresses it considers on-link,
+defeating the purpose of the mechanism for local segment traffic.
+A /32 ensures all IPv4 traffic is directed to the first-hop router
+via the sentinel, with no on-link ARP possible.<a href="#section-4-3" class="pilcrow">¶</a></p>
+<p id="section-4-4">When a host is configured to use <code>IPV4-SENTINEL</code> as its IPv4 default
+gateway, the host's operating system <span class="bcp14">MUST</span> implement the following
+logic:<a href="#section-4-4" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-4-5">
+<li id="section-4-5.1">
+          <p id="section-4-5.1.1">The host <span class="bcp14">MUST</span> maintain a functional IPv6 Neighbor Discovery
+implementation per <span>[<a href="#RFC4861" class="cite xref">RFC4861</a>]</span> on the same interface,
+including default router discovery and neighbor cache
+maintenance. No additional action specific to this mechanism
+is required at interface configuration time.<a href="#section-4-5.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-4-5.2">
+          <p id="section-4-5.2.1">When the next hop for an IPv4 packet is <code>IPV4-SENTINEL</code>, the host
+<span class="bcp14">MUST NOT</span> perform ARP. Instead, it consults the IPv6 default
+router list and neighbor cache for the link-layer address,
+scoped to the interface on which <code>IPV4-SENTINEL</code> is configured
+as the IPv4 default gateway.<a href="#section-4-5.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-4-5.3">
+          <p id="section-4-5.3.1">If the IPv6 default router link-layer address is in a usable
+NUD state (REACHABLE, STALE, DELAY, or PROBE per <span>[<a href="#RFC4861" class="cite xref">RFC4861</a>]</span>),
+the IPv4 packet is sent in a link-layer frame addressed to
+that destination.<a href="#section-4-5.3.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-4-5.4">
+          <p id="section-4-5.4.1">If no reachable IPv6 default router is known after the
+interface has completed initial configuration (i.e., at
+least one RA has been processed), the packet <span class="bcp14">MAY</span> be queued
+or dropped per implementation policy. If a last-known
+router address is available, a Neighbor Solicitation
+<span class="bcp14">SHOULD</span> be sent to that address. For behavior prior to
+first RA reception, see the startup paragraph below.<a href="#section-4-5.4.1" class="pilcrow">¶</a></p>
+</li>
+      </ol>
+<p id="section-4-6">Host stacks <span class="bcp14">MUST</span> treat <code>IPV4-SENTINEL</code> as a sentinel address
+signalling that IPv6-based next-hop resolution is to be used,
+regardless of other address configuration on the interface.
+This behavior is unconditional and not dependent on any
+additional signaling.<a href="#section-4-6" class="pilcrow">¶</a></p>
+<p id="section-4-7">When a DHCPv4 lease configuring <code>IPV4-SENTINEL</code> expires and
+is not renewed, the host <span class="bcp14">SHOULD</span> remove <code>IPV4-SENTINEL</code> as the
+IPv4 default gateway and cease IPv6-based resolution on that
+interface. For statically configured deployments, removal
+is governed by local administrative policy.<a href="#section-4-7" class="pilcrow">¶</a></p>
+<p id="section-4-8">The following pseudocode defines the resolution logic:<a href="#section-4-8" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-4-9">
+<pre>
+on interface I (where IPV4-SENTINEL is the configured IPv4 gateway):
+
+  if next-hop(pkt) == IPV4-SENTINEL:
+
+    routers = default_router_list(I)
+
+    if routers is empty:
+      if not first_ra_received(I):  /* startup: MUST queue */
+        queue pkt
+      else:                         /* mid-operation: MAY drop */
+        queue or drop pkt
+      send Router Solicitation on I  /* ff02::2; subject to
+                                        RFC 4861 rate limiting */
+      return
+
+    selected = select from routers by:
+      1. highest Default Router Preference (RFC 4191)
+      2. NUD state == REACHABLE   /* if preference equal */
+      3. implementation-defined   /* if reachability equal */
+
+    lladdr = neighbor_cache(I, selected).lladdr
+
+    if lladdr is valid and NUD state != INCOMPLETE:
+      /* STALE, DELAY, and PROBE are usable; see RFC 4861 s7.3.3 */
+      send pkt in link-layer frame with dst = lladdr
+    else:
+      queue or drop pkt           /* per implementation policy */
+      send Neighbor Solicitation for selected router on I
+</pre><a href="#section-4-9" class="pilcrow">¶</a>
+</div>
+<p id="section-4-10">Router selection uses Default Router Preference as defined in
+<span>[<a href="#RFC4191" class="cite xref">RFC4191</a>]</span>. When multiple routers have equal preference and
+reachability, the tiebreaker is implementation-defined; use
+of most-recently-heard RA is one reasonable approach.<a href="#section-4-10" class="pilcrow">¶</a></p>
+<p id="section-4-11">If the selected IPv6 default router becomes unreachable during
+an active session, the host <span class="bcp14">SHOULD</span> re-evaluate the default
+router list and select an alternative. Existing transport
+sessions will be disrupted if the link-layer next-hop changes;
+this is consistent with IPv6 router failure behavior and is not
+specific to this mechanism. Packets queued for a router that
+has become unreachable <span class="bcp14">SHOULD</span> be flushed and re-evaluated
+against the updated router selection.<a href="#section-4-11" class="pilcrow">¶</a></p>
+<p id="section-4-12">Each time an interface transitions to an operational state
+and begins RA solicitation, a host may receive DHCPv4
+configuration before any RA has been processed. Until a
+reachable IPv6 default router is known, IPv4 packets <span class="bcp14">MUST</span>
+be queued rather than silently dropped, pending RA reception.
+Implementations <span class="bcp14">SHOULD</span> bound this queue duration to avoid
+indefinite resource consumption. On queue timeout, packets
+<span class="bcp14">SHOULD</span> be dropped and an ICMPv4 Host Unreachable message
+<span class="bcp14">MAY</span> be generated toward the sending application.<a href="#section-4-12" class="pilcrow">¶</a></p>
+<div id="multihomed">
+<section id="section-4.1">
+        <h3 id="name-multi-homed-hosts">
+<a href="#section-4.1" class="section-number selfRef">4.1. </a><a href="#name-multi-homed-hosts" class="section-name selfRef">Multi-Homed Hosts</a>
+        </h3>
+<p id="section-4.1-1">Cross-interface resolution <span class="bcp14">MUST NOT</span> be performed. On multi-homed
+hosts, each interface independently resolves <code>IPV4-SENTINEL</code>
+against its own IPv6 neighbor cache state.<a href="#section-4.1-1" class="pilcrow">¶</a></p>
+<p id="section-4.1-2">The sentinel is an interface-scoped next-hop token, not the
+address of a particular router. It denotes "the IPv6 default
+router on this interface" and carries no topological
+information. Two interfaces configured with the same value
+resolve it to two different link-layer addresses, by way of two
+different IPv6 default router lists. This is the property IPv6
+link-local next-hops already have, where a route is meaningful
+only together with the interface it is attached to.<a href="#section-4.1-2" class="pilcrow">¶</a></p>
+<p id="section-4.1-3">Every IPv4 route whose next hop is the sentinel is therefore a
+triple, not a pair:<a href="#section-4.1-3" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-4.1-4">
+<pre>
+(destination prefix, outgoing interface, via IPV4-SENTINEL)
+</pre><a href="#section-4.1-4" class="pilcrow">¶</a>
+</div>
+<p id="section-4.1-5">A host holding a sentinel default route on each of two
+interfaces holds two distinct routes rather than a conflict:<a href="#section-4.1-5" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-4.1-6">
+<pre>
+0.0.0.0/0   dev if1   via IPV4-SENTINEL
+0.0.0.0/0   dev if2   via IPV4-SENTINEL
+</pre><a href="#section-4.1-6" class="pilcrow">¶</a>
+</div>
+<p id="section-4.1-7">They are disambiguated exactly as the equivalent IPv6 routes
+with link-local next-hops are: by outgoing interface, and by
+whatever metric or policy the host already applies when choosing
+between two default routes. Resolution then proceeds per the
+algorithm above, independently on each interface, against that
+interface's own neighbor cache.<a href="#section-4.1-7" class="pilcrow">¶</a></p>
+<p id="section-4.1-8">DHCPv4 needs no extension to express this. A DHCPv4 client
+already keeps configuration per interface, and a lease obtained
+on one interface supplies the Router Option (Option 3) default
+for that interface alone. More specific routes are carried per
+interface in the same way, through the Classless Static Route
+Option (Option 121) <span>[<a href="#RFC3442" class="cite xref">RFC3442</a>]</span>, whose router field accepts the
+sentinel as it would any other next-hop value. Both sides of the
+exchange are thus already interface-scoped; see
+<a href="#implementation" class="auto internal xref">Section 8</a> for demonstrations.<a href="#section-4.1-8" class="pilcrow">¶</a></p>
+<p id="section-4.1-9">Source address selection is unaffected by this mechanism. Once
+an egress interface has been selected, the host chooses a source
+address from that interface exactly as it does today. The
+sentinel is never a candidate source address and never appears
+in a forwarded packet (see <a href="#ingress" class="auto internal xref">Section 5.3</a>).<a href="#section-4.1-9" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="router-behavior">
+<section id="section-5">
+      <h2 id="name-router-behavior">
+<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-router-behavior" class="section-name selfRef">Router Behavior</a>
+      </h2>
+<div id="end-to-end-packet-flow">
+<section id="section-5.1">
+        <h3 id="name-end-to-end-packet-flow">
+<a href="#section-5.1" class="section-number selfRef">5.1. </a><a href="#name-end-to-end-packet-flow" class="section-name selfRef">End-to-End Packet Flow</a>
+        </h3>
+<p id="section-5.1-1">In this model, end hosts are assigned IPv4 addresses with a /32
+prefix length. No IPv4 prefix is configured on the link; a
+sending host directs all IPv4 traffic to the first-hop router
+using the link-layer address derived from the IPv6 neighbor cache.
+A host cannot resolve another host's IPv4 address on the
+local link without router assistance, so all intra-segment IPv4
+traffic is forwarded by the first-hop router.<a href="#section-5.1-1" class="pilcrow">¶</a></p>
+<p id="section-5.1-2">This mechanism does not rely on ICMPv4 redirects
+(<span>[<a href="#RFC1122" class="cite xref">RFC1122</a>]</span>, Section 3.2.2.2). A redirect conveys a next-hop
+address alone, and so cannot express the (destination,
+interface, sentinel) form that next-hop resolution takes here
+(see <a href="#multihomed" class="auto internal xref">Section 4.1</a>); on a multi-homed host the result would be
+ambiguous. Redirects are in any case widely filtered or ignored
+in current deployments. Where traffic is to be steered towards
+one of several first-hop routers, that selection is made
+through Default Router Preference <span>[<a href="#RFC4191" class="cite xref">RFC4191</a>]</span> in Router
+Advertisements, which operates per interface and is already
+required by this mechanism for router selection.<a href="#section-5.1-2" class="pilcrow">¶</a></p>
+<p id="section-5.1-3">For return traffic to reach end hosts, operators <span class="bcp14">MUST</span> ensure
+that host /32 routes with an IPv6 next-hop per <span>[<a href="#RFC8950" class="cite xref">RFC8950</a>]</span>
+are present in the routing infrastructure, allowing routers
+to forward IPv4 traffic toward the correct first-hop without
+requiring IPv4 addresses on any router interface. The mechanism
+by which the routing infrastructure learns these host routes is
+outside the scope of this document.<a href="#section-5.1-3" class="pilcrow">¶</a></p>
+<p id="section-5.1-4">The following diagram illustrates the end-to-end packet flow.
+Router-to-router forwarding uses <span>[<a href="#RFC8950" class="cite xref">RFC8950</a>]</span>; no IPv4 address
+is configured on any router interface. IPv4 addresses used in
+the diagram are from the documentation ranges defined in
+<span>[<a href="#RFC5737" class="cite xref">RFC5737</a>]</span> and are not globally routable.<a href="#section-5.1-4" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-5.1-5">
+<pre>
+Host A                      Router R1
+IPv4: 198.51.100.1/32       (no IPv4 address configured)
+IPv4 gw: 192.0.2.11         IPv6 link-local: fe80::R1
+IPv6: 2001:db8:1::1
+
+  [1] IPv4 pkt (src: 198.51.100.1, dst: 203.0.113.5)
+      L2 dst: MAC(R1) -- resolved from ND cache, no ARP
+  ----------------------------------------------------&gt;
+
+Router R1                   Router R2
+(no IPv4 address)           (no IPv4 address configured)
+IPv6 link-local: fe80::R1   IPv6 link-local: fe80::R2
+
+  [2] FIB lookup: 203.0.113.5/32 via fe80::R2 (RFC 8950)
+      L2 dst: MAC(R2) -- resolved from ND cache, no ARP
+  ----------------------------------------------------&gt;
+
+Router R2                   Host B
+(no IPv4 address)           IPv4: 203.0.113.5/32
+IPv6 link-local: fe80::R2   IPv6: 2001:db8:2::2
+
+  [3] FIB lookup: 203.0.113.5/32 via fe80::HostB (ND)
+      L2 dst: MAC(HostB) -- resolved from ND cache, no ARP
+  ----------------------------------------------------&gt;
+  [4] IPv4 packet delivered to Host B
+</pre><a href="#section-5.1-5" class="pilcrow">¶</a>
+</div>
+<p id="section-5.1-6">No ARP is exchanged at any point.<a href="#section-5.1-6" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="durability">
+<section id="section-5.2">
+        <h3 id="name-router-to-host-binding-dura">
+<a href="#section-5.2" class="section-number selfRef">5.2. </a><a href="#name-router-to-host-binding-dura" class="section-name selfRef">Router-to-Host Binding Durability</a>
+        </h3>
+<p id="section-5.2-1">A first-hop router <span class="bcp14">MUST</span> be able, for the lifetime of a host's
+IPv4 address assignment, to deliver IPv4 traffic to that host's
+/32 without depending on opportunistically learned neighbor
+cache state.<a href="#section-5.2-1" class="pilcrow">¶</a></p>
+<p id="section-5.2-2">The failure mode this prohibits is the following. A router that
+learns a host's link-layer address only as a side effect of
+traffic, and holds the resulting IPv6 neighbor cache entry under
+ordinary garbage collection, will discard that entry once the
+host has been idle long enough. If the host's /32 route is
+derived from that entry, the route is withdrawn with it, and
+inbound traffic that would have prompted re-resolution never
+arrives, because it is discarded upstream for want of a route.
+Connectivity then does not recover, and the host cannot recover
+it, since the host has no way to learn that it has become
+unreachable from outside. Outbound traffic from the host
+repairs the binding, but a host with no reason to send will
+remain unreachable indefinitely.<a href="#section-5.2-2" class="pilcrow">¶</a></p>
+<p id="section-5.2-3">Satisfying this requirement is a matter of router
+implementation and operator configuration, and the mechanisms
+are outside the scope of this document. They include deriving
+the binding from DHCPv4 lease state rather than from traffic,
+provoking Neighbor Discovery from that lease state, populating
+the binding from an orchestration or route distribution system,
+and anchoring it to a delegated prefix. A separate document is
+expected to catalogue acceptable configurations.<a href="#section-5.2-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="ingress">
+<section id="section-5.3">
+        <h3 id="name-router-ingress-behavior">
+<a href="#section-5.3" class="section-number selfRef">5.3. </a><a href="#name-router-ingress-behavior" class="section-name selfRef">Router Ingress Behavior</a>
+        </h3>
+<p id="section-5.3-1">Routers <span class="bcp14">MUST</span> treat <code>IPV4-SENTINEL</code> as an interface-scoped
+address, valid only on the interface on which it is
+configured, and only for locally-terminated traffic.
+<code>IPV4-SENTINEL</code> does not appear in IPv4 fragment headers;
+fragmentation behavior is unchanged by this mechanism.
+Specifically:<a href="#section-5.3-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5.3-2.1">
+            <p id="section-5.3-2.1.1">It <span class="bcp14">MUST NOT</span> be injected into any routing protocol.<a href="#section-5.3-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-5.3-2.2">
+            <p id="section-5.3-2.2.1">It <span class="bcp14">MUST NOT</span> trigger overlapping-subnet checks.<a href="#section-5.3-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-5.3-2.3">
+            <p id="section-5.3-2.3.1">It <span class="bcp14">MUST NOT</span> appear as source or destination in any
+forwarded packet.<a href="#section-5.3-2.3.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-5.3-3">A router <span class="bcp14">MAY</span> respond to ICMPv4 echo requests addressed to
+<code>IPV4-SENTINEL</code> and <span class="bcp14">MAY</span> generate ICMPv4 Time Exceeded messages using
+<code>IPV4-SENTINEL</code> as the source address. All such messages are
+interface-local.<a href="#section-5.3-3" class="pilcrow">¶</a></p>
+<p id="section-5.3-4">ICMPv4 error generation on IPv6-only transit routers is out of
+scope; see <span>[<a href="#RFC7600" class="cite xref">RFC7600</a>]</span>.<a href="#section-5.3-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="arp-compat">
+<section id="section-5.4">
+        <h3 id="name-backward-compatibility-rout">
+<a href="#section-5.4" class="section-number selfRef">5.4. </a><a href="#name-backward-compatibility-rout" class="section-name selfRef">Backward Compatibility: Router ARP Response</a>
+        </h3>
+<p id="section-5.4-1">The use of <code>IPV4-SENTINEL</code> as the DHCPv4 Router Option (Option 3)
+value is fully conformant with <span>[<a href="#RFC2132" class="cite xref">RFC2132</a>]</span>, which imposes no
+requirement that the router address be reachable via ARP on
+the same subnet. Unlike <span>[<a href="#RFC1027" class="cite xref">RFC1027</a>]</span> (proxy ARP), the router
+is not proxying for a remote host; it owns this address on
+the interface for the purpose of link-layer reachability.<a href="#section-5.4-1" class="pilcrow">¶</a></p>
+<p id="section-5.4-2">Unmodified hosts receiving <code>IPV4-SENTINEL</code> as their IPv4 default
+gateway will issue an ARP request for it. A router <span class="bcp14">SHOULD</span> respond
+to such ARP requests with its own MAC address. This is not proxy
+ARP: no subnet exists, no remote host is being proxied.<a href="#section-5.4-2" class="pilcrow">¶</a></p>
+<p id="section-5.4-3">This enables a two-tier deployment model on the same L2 segment:<a href="#section-5.4-3" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5.4-4.1">
+            <p id="section-5.4-4.1.1"><strong>Unmodified hosts:</strong> router answers ARP; IPv4 forwarding works
+with zero host-side changes.<a href="#section-5.4-4.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-5.4-4.2">
+            <p id="section-5.4-4.2.1"><strong>Updated hosts:</strong> link-layer address resolved from IPv6 neighbor
+cache; ARP eliminated entirely.<a href="#section-5.4-4.2.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-5.4-5">Both tiers interoperate, allowing incremental deployment.
+The router requires no per-host state to support both
+tiers simultaneously: updated hosts will not send ARP
+requests for <code>IPV4-SENTINEL</code>, so the router's ARP response
+behavior is triggered only by unmodified hosts.<a href="#section-5.4-5" class="pilcrow">¶</a></p>
+<p id="section-5.4-6">The ARP responder is migration machinery, and it is under
+operator control. It exists so that unmodified hosts keep
+working while a segment is being converted. An operator <span class="bcp14">SHOULD</span>
+enable it for as long as unmodified hosts remain on the segment,
+and <span class="bcp14">SHOULD</span> disable it once none do. The two-tier model is a
+transitional state rather than the end state: on a fully
+migrated segment no ARP is exchanged at all, the router's own
+responder included.<a href="#section-5.4-6" class="pilcrow">¶</a></p>
+<p id="section-5.4-7">The requirement in <a href="#host-behavior" class="auto internal xref">Section 4</a> that a host <span class="bcp14">MUST NOT</span>
+perform ARP for the sentinel is correspondingly strict, and this
+document deliberately defines no host-side fallback to ARP. A
+sanctioned fallback would mean that no operator could safely
+retire the responder on any segment, since a conformant host
+might resort to ARP at any time. The zero-ARP end state would be
+foreclosed permanently, and the return would be the masking of
+a misconfiguration that is better surfaced (see
+<a href="#security-considerations" class="auto internal xref">Section 7</a>).<a href="#section-5.4-7" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="deployment-considerations">
+<section id="section-6">
+      <h2 id="name-deployment-considerations">
+<a href="#section-6" class="section-number selfRef">6. </a><a href="#name-deployment-considerations" class="section-name selfRef">Deployment Considerations</a>
+      </h2>
+<p id="section-6-1">This mechanism applies granularly at the segment level. A network
+may contain a mix of IPv4-only, dual-stack, and IPv6-only
+segments; this mechanism is applicable specifically to IPv6-only
+segments carrying dual-stack hosts and does not affect other
+segment types.<a href="#section-6-1" class="pilcrow">¶</a></p>
+<div id="applicability">
+<section id="section-6.1">
+        <h3 id="name-applicability">
+<a href="#section-6.1" class="section-number selfRef">6.1. </a><a href="#name-applicability" class="section-name selfRef">Applicability</a>
+        </h3>
+<p id="section-6.1-1">Hosts without a functional IPv6 implementation on the relevant
+interface cannot perform Neighbor Discovery and are outside
+the scope of this document.<a href="#section-6.1-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="relationship-to-other-transition-mechanisms">
+<section id="section-6.2">
+        <h3 id="name-relationship-to-other-trans">
+<a href="#section-6.2" class="section-number selfRef">6.2. </a><a href="#name-relationship-to-other-trans" class="section-name selfRef">Relationship to Other Transition Mechanisms</a>
+        </h3>
+<p id="section-6.2-1">This mechanism complements <span>[<a href="#RFC8925" class="cite xref">RFC8925</a>]</span> (IPv6-Only Preferred
+Option). RFC 8925 allows hosts to signal a preference for
+IPv6-only operation, but operators must still provide IPv4
+for hosts or applications that require it. This document
+provides exactly that fallback: IPv4 connectivity on an
+IPv6-only segment, without requiring a dual-stack
+infrastructure or an IPv4 subnet on the local link. A host
+that receives Option 108 and transitions to IPv6-only
+operation retains functional IPv4 connectivity via
+<code>IPV4-SENTINEL</code> without any additional configuration.<a href="#section-6.2-1" class="pilcrow">¶</a></p>
+<p id="section-6.2-2">This mechanism fits within the IPv6-mostly network deployment
+model described in <span>[<a href="#I-D.ietf-v6ops-6mops" class="cite xref">I-D.ietf-v6ops-6mops</a>]</span>, specifically
+the case where native IPv4 connectivity is provided to
+dual-stack hosts on an IPv6-only segment.<a href="#section-6.2-2" class="pilcrow">¶</a></p>
+<p id="section-6.2-3">CLAT <span>[<a href="#I-D.ietf-v6ops-claton" class="cite xref">I-D.ietf-v6ops-claton</a>]</span> and this mechanism serve
+different demand profiles, and are not alternatives for the same
+host. CLAT provides outbound IPv4 reachability by translating
+into a pool shared at the PLAT; address sharing is the point of
+it, and a host behind a CLAT has no IPv4 address of its own that
+a remote peer can address. This mechanism provides the
+complementary thing: a per-host IPv4 address that is routable
+end to end, retains inbound reachability, and appears to the
+host stack as ordinary IPv4 configuration. A host that needs
+only outbound access to IPv4 services is well served by CLAT; a
+host that is itself an IPv4 service endpoint, or that runs
+software requiring a real IPv4 address, is not.<a href="#section-6.2-3" class="pilcrow">¶</a></p>
+<p id="section-6.2-4">The two interact cleanly. A CLAT function <span class="bcp14">SHOULD</span> be disabled
+when native IPv4 connectivity is available
+<span>[<a href="#I-D.ietf-v6ops-claton" class="cite xref">I-D.ietf-v6ops-claton</a>]</span>, and this mechanism supplies exactly
+that native connectivity through ordinary DHCPv4. The existing
+trigger therefore applies with no modification.<a href="#section-6.2-4" class="pilcrow">¶</a></p>
+<p id="section-6.2-5">The per-host address need not be globally unique. On client
+segments, a /32 drawn from <span>[<a href="#RFC1918" class="cite xref">RFC1918</a>]</span> space with translation at
+the network edge works with this mechanism unchanged. What the
+host requires is a routable IPv4 identity on the segment, not a
+public one.<a href="#section-6.2-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="access-provider-deployments">
+<section id="section-6.3">
+        <h3 id="name-access-provider-deployments">
+<a href="#section-6.3" class="section-number selfRef">6.3. </a><a href="#name-access-provider-deployments" class="section-name selfRef">Access Provider Deployments</a>
+        </h3>
+<p id="section-6.3-1">The common access-network case is a single public IPv4 address
+per subscriber, delivered over an IPv6-only access network. This
+mechanism addresses that case directly, and removes several
+costs usually treated as unavoidable.<a href="#section-6.3-1" class="pilcrow">¶</a></p>
+<p id="section-6.3-2">No IPv4 space is carved per service area, because no segment
+carries an IPv4 prefix. No addresses are consumed by subnet and
+broadcast overhead, and none are stranded by a mismatch between
+a subnet's size and the number of subscribers actually attached
+to it. ARP is not present at MAC-domain scale. The pool is flat:
+any /32 may be assigned to any subscriber anywhere in the
+network, and reclaimed and reissued without regard to topology.<a href="#section-6.3-2" class="pilcrow">¶</a></p>
+<p id="section-6.3-3">Per-subscriber service differentiation follows from the same
+property. One access segment can serve subscribers holding
+public IPv4, subscribers holding addresses from shared CGN
+space, and subscribers with no IPv4 at all, at the same time.
+The distinction lies entirely in what DHCPv4 provisioning
+returns, and nowhere in the configuration of the segment.<a href="#section-6.3-3" class="pilcrow">¶</a></p>
+<p id="section-6.3-4">The model is not specific to one access technology. It applies
+to FTTH and DOCSIS, to enterprise and campus wireless, and to
+fixed wireless access over a mobile operator's IPv6-only
+transport, in each case as a per-subscriber /32 over IPv6-only
+infrastructure. An operator running several of these obtains a
+single IPv4 service architecture across all of them. Handsets
+remain a separate case, well served by 464XLAT <span>[<a href="#RFC6877" class="cite xref">RFC6877</a>]</span>.<a href="#section-6.3-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="neighbor-discovery-prerequisites">
+<section id="section-6.4">
+        <h3 id="name-neighbor-discovery-prerequi">
+<a href="#section-6.4" class="section-number selfRef">6.4. </a><a href="#name-neighbor-discovery-prerequi" class="section-name selfRef">Neighbor Discovery Prerequisites</a>
+        </h3>
+<p id="section-6.4-1">Because IPv4 next-hop resolution now depends on Neighbor
+Discovery, this mechanism inherits ND's operational
+prerequisites. A fault in ND becomes an IPv4 fault as well as an
+IPv6 one.<a href="#section-6.4-1" class="pilcrow">¶</a></p>
+<p id="section-6.4-2">Specifically: ICMPv6 must be permitted by host firewalls, for
+Neighbor Solicitation and Neighbor Advertisement as well as
+Router Solicitation and Router Advertisement; multicast must be
+delivered correctly across the segment, including by any MLD
+snooping in the path, so that solicited-node multicast reaches
+its target; and link-layer filtering must not discard frames
+addressed to solicited-node multicast groups.<a href="#section-6.4-2" class="pilcrow">¶</a></p>
+<p id="section-6.4-3">None of these is a new requirement. Each is already a
+prerequisite for functioning IPv6 on the segment, and a segment
+on which they are not met does not have working IPv6 service.
+They are stated here because an operator whose IPv6 service is
+nominally working, but whose ND health has never been examined
+closely, may otherwise meet the dependency for the first time as
+an IPv4 symptom.<a href="#section-6.4-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="intra-segment-traffic">
+<section id="section-6.5">
+        <h3 id="name-intra-segment-traffic">
+<a href="#section-6.5" class="section-number selfRef">6.5. </a><a href="#name-intra-segment-traffic" class="section-name selfRef">Intra-Segment Traffic</a>
+        </h3>
+<p id="section-6.5-1">Because hosts carry /32 addresses, traffic between two hosts on
+the same segment is forwarded by the first-hop router rather
+than switched directly. The cost of this is topology-dependent,
+and is frequently overstated.<a href="#section-6.5-1" class="pilcrow">¶</a></p>
+<p id="section-6.5-2">Where the first-hop router is the access switch itself, as in an
+L3 access design or a datacenter leaf, the forwarded path
+traverses the same physical links the switched path would have
+used, and is forwarded in hardware at line rate. The additional
+cost is a forwarding lookup, not additional wire. The case that
+does cost bandwidth twice is a router on a stick behind a shared
+L2 domain, where each intra-segment packet crosses the uplink
+once in each direction.<a href="#section-6.5-2" class="pilcrow">¶</a></p>
+<p id="section-6.5-3">Guidance therefore follows the demand rather than the mechanism.
+On the segments this mechanism most obviously suits -- access
+and hosting segments, where lateral IPv4 between customers is
+suppressed by policy or simply absent -- the cost rounds to
+zero. On enterprise segments with an L3 access layer it is a
+forwarding lookup. A segment carrying heavy east-west IPv4
+traffic behind a shared L2 domain, reached by a router on a
+stick, is the case that should not adopt this mechanism first:
+such a segment is better left dual-stack, or moved to IPv6 for
+its east-west traffic before the IPv4 first hop is converted.<a href="#section-6.5-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="layer-2-integrity-features">
+<section id="section-6.6">
+        <h3 id="name-layer-2-integrity-features">
+<a href="#section-6.6" class="section-number selfRef">6.6. </a><a href="#name-layer-2-integrity-features" class="section-name selfRef">Layer 2 Integrity Features</a>
+        </h3>
+<p id="section-6.6-1">DHCP snooping, Dynamic ARP Inspection and IP Source Guard were
+specified against an assumption of a shared subnet with on-link
+bindings. Their behaviour with an off-subnet gateway and /32
+leases needs to be validated per platform before deployment.<a href="#section-6.6-1" class="pilcrow">¶</a></p>
+<p id="section-6.6-2">The expected analysis is favourable. The first-hop router sits
+on a trusted port, so its ARP reply for the sentinel is not
+subject to inspection and passes unchanged. An unmodified host's
+ARP request validates against that host's own sender binding,
+which the DHCPv4 /32 lease supplies in the usual way. IP Source
+Guard sees the leased address and permits it. None of this
+depends on the gateway being a member of the host's subnet.<a href="#section-6.6-2" class="pilcrow">¶</a></p>
+<p id="section-6.6-3">The residue is where attention is warranted. A first-hop router
+on an untrusted port needs a static permit for the sentinel.
+Platforms vary in whether inspection examines the ARP target
+address as well as the sender, and in how gratuitous ARP is
+treated. Some platforms carry binding machinery beyond these
+three features, with its own subnet assumptions. Where a static
+permit is required, a single universal entry suffices for an
+entire deployment, because the sentinel holds the same value on
+every segment.<a href="#section-6.6-3" class="pilcrow">¶</a></p>
+<p id="section-6.6-4">This apparatus becomes unnecessary for IPv4 as migration
+completes. Once no unmodified hosts remain and the router's ARP
+responder has been retired, there is no ARP on the segment to
+inspect, and host impersonation is an ND concern met by
+ND-specific protections (see <a href="#security-considerations" class="auto internal xref">Section 7</a>).<a href="#section-6.6-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="multiple-gateways-and-redundancy">
+<section id="section-6.7">
+        <h3 id="name-multiple-gateways-and-redun">
+<a href="#section-6.7" class="section-number selfRef">6.7. </a><a href="#name-multiple-gateways-and-redun" class="section-name selfRef">Multiple Gateways and Redundancy</a>
+        </h3>
+<p id="section-6.7-1">Because the sentinel is resolved from the neighbor cache and
+never by election, any number of routers on a segment may
+present it at the same time, with no coordination between them
+and no shared virtual address. Each updated host resolves the
+sentinel to whichever IPv6 default router it has itself
+selected. The requirement on the routers reduces to holding
+distinct IPv6 identities, which they must do in any case. The
+effect is anycast-like, though this is not anycast in the
+technical sense: one value, many holders, and selection made
+independently by each host.<a href="#section-6.7-1" class="pilcrow">¶</a></p>
+<p id="section-6.7-2">That holds for the updated tier. Unmodified hosts still ARP for
+the sentinel, and where more than one router answers, the last
+reply received wins. The resulting nondeterminism is benign,
+since every answering router is a valid first hop, but it is
+nondeterminism nonetheless; an operator who wants a determinate
+answer for the ARP tier can run a conventional FHRP in front of
+it. That choice affects unmodified hosts only.<a href="#section-6.7-2" class="pilcrow">¶</a></p>
+<p id="section-6.7-3">Every router a host may select <span class="bcp14">MUST</span> be able to forward that
+host's IPv4 traffic, and <span class="bcp14">MUST</span> have a return path for it per
+<span>[<a href="#RFC8950" class="cite xref">RFC8950</a>]</span>. Where some routers on a segment qualify and others
+do not, operators <span class="bcp14">MUST</span> steer host selection with Default Router
+Preference <span>[<a href="#RFC4191" class="cite xref">RFC4191</a>]</span>. On segments where several routers
+advertise equal preference, as is common in datacenter ECMP
+fabrics, hosts may select inconsistently according to RA timing;
+operators <span class="bcp14">SHOULD</span> set preferences explicitly wherever a
+deterministic outcome is wanted.<a href="#section-6.7-3" class="pilcrow">¶</a></p>
+<p id="section-6.7-4">Return traffic needs no additional machinery. Where route
+origination is configured correctly, every router on the segment
+originates a route to each host /32, and inbound traffic is
+distributed active-active by ordinary ECMP. The two directions
+heal independently: the downstream path converges at the pace of
+the routing protocol, and the upstream path at the pace of RA
+processing and Neighbor Unreachability Detection on the host.
+Operators running stateful functions on segment routers inherit
+the usual consequences of ECMP path asymmetry, and should apply
+the same measures they would in any other ECMP deployment.<a href="#section-6.7-4" class="pilcrow">¶</a></p>
+<p id="section-6.7-5">No failover MAC address is involved. An updated host elects
+nothing and inherits nothing; it follows its own IPv6 default
+router selection, and a change of router is a change of
+link-layer destination like any other. An unmodified host either
+accepts the timing of its ARP cache expiring and re-resolving,
+or sits behind a conventional FHRP as above.<a href="#section-6.7-5" class="pilcrow">¶</a></p>
+<p id="section-6.7-6">More generally, the two things a first-hop redundancy protocol
+is usually asked for are a gateway address that survives a
+change of owner and a floating service address that does the
+same. Both are the same requirement: an address that must appear
+on-link while the device holding it may change. This model meets
+the first by removing the address from the link altogether, and
+the second by route origination, where the address is originated
+by whichever member currently owns it, and originated
+conditionally by the active member for stateful pairs.<a href="#section-6.7-6" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="first-hop-failover-pacing">
+<section id="section-6.8">
+        <h3 id="name-first-hop-failover-pacing">
+<a href="#section-6.8" class="section-number selfRef">6.8. </a><a href="#name-first-hop-failover-pacing" class="section-name selfRef">First-Hop Failover Pacing</a>
+        </h3>
+<p id="section-6.8-1">IPv4 first-hop failover under this mechanism is paced entirely
+by IPv6 default router selection. There is no IPv4-specific
+detection mechanism and no IPv4-specific latency: whatever a
+host's IPv6 first-hop failover behaviour is on a segment, its
+IPv4 behaviour is now the same.<a href="#section-6.8-1" class="pilcrow">¶</a></p>
+<p id="section-6.8-2">For a planned decommission, the departing router sends a final
+Router Advertisement with a Router Lifetime of zero
+(<span>[<a href="#RFC4861" class="cite xref">RFC4861</a>]</span>, Section 6.2.5). Hosts remove it from the default
+router list on receipt and select another immediately, so a
+planned failover need not involve detection at all. Operators
+<span class="bcp14">SHOULD</span> ensure this advertisement is sent by any procedure that
+stops an RA daemon or removes a router from service; where it is
+omitted, a planned change degrades into the unplanned case.<a href="#section-6.8-2" class="pilcrow">¶</a></p>
+<p id="section-6.8-3">For an unplanned failure, detection is by Neighbor
+Unreachability Detection, which is traffic-driven. A host with
+active flows through the failed router moves the neighbor entry
+through DELAY and PROBE to FAILED and selects another router
+within single-digit seconds, comparable to a conventional FHRP
+in its default configuration. A host with nothing in flight
+detects nothing, by design, and drops the router when its
+advertised lifetime expires; the next packet it sends drives
+resolution. Where sub-second failover is required it is
+engineered rather than assumed, exactly as with a conventional
+FHRP, by pairing the first hop with a liveness mechanism such as
+BFD or by shortening RA intervals.<a href="#section-6.8-3" class="pilcrow">¶</a></p>
+<p id="section-6.8-4">Two further notes. On platforms where the IPv4 and IPv6 stacks
+are separate, the IPv4 path inherits whatever the operating
+system's NUD implementation concludes, so failover timing is a
+property of that stack rather than of this document. And DHCPv4
+lease renewal or release does not affect next-hop selection: the
+lease governs the host's address and the configured gateway
+value, while resolution of that value is driven solely by
+Neighbor Discovery.<a href="#section-6.8-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="return-path-provisioning">
+<section id="section-6.9">
+        <h3 id="name-return-path-provisioning">
+<a href="#section-6.9" class="section-number selfRef">6.9. </a><a href="#name-return-path-provisioning" class="section-name selfRef">Return Path Provisioning</a>
+        </h3>
+<p id="section-6.9-1"><a href="#durability" class="auto internal xref">Section 5.2</a> requires that a first-hop router be able to
+deliver to each host /32 for the lifetime of the assignment. The
+mechanisms are outside the scope of this document, but one
+practical point is worth recording.<a href="#section-6.9-1" class="pilcrow">¶</a></p>
+<p id="section-6.9-2">Lease-triggered origination is existing practice rather than a
+new invention. Where the first-hop router is the DHCPv4 relay,
+or observes relayed traffic, it already holds the lease binding;
+together with the host's link-layer address from Neighbor
+Discovery, that is sufficient to originate the <span>[<a href="#RFC8950" class="cite xref">RFC8950</a>]</span> route
+for the host's /32 when the lease is granted and to withdraw it
+when the lease ends. Broadband network gateways originate
+subscriber routes on exactly this basis today. This is an
+illustration only: route origination belongs to <span>[<a href="#RFC8950" class="cite xref">RFC8950</a>]</span> and
+<span>[<a href="#I-D.ietf-intarea-v4-via-v6" class="cite xref">I-D.ietf-intarea-v4-via-v6</a>]</span>, and nothing in this document
+constrains how it is done.<a href="#section-6.9-2" class="pilcrow">¶</a></p>
+<p id="section-6.9-3">The choice of IPv6 next-hop identity for those routes deserves
+care. An IPv6 link-local address is not a stable identifier for
+a host under current address-generation practice. An
+implementation that moves from an interface-identifier-derived
+address to a semantically opaque one <span>[<a href="#RFC7217" class="cite xref">RFC7217</a>]</span> may do so
+during interface bring-up, in the middle of the DHCPv4 exchange,
+so a return route keyed to the first link-local address observed
+can be stale before the host has finished configuring.<a href="#section-6.9-3" class="pilcrow">¶</a></p>
+<p id="section-6.9-4">Operators <span class="bcp14">SHOULD</span> therefore key return routes to a stable
+next-hop identity wherever one is available: a global address
+the provisioning system already knows, an address anchored to a
+delegated prefix, or a binding derived from ND snooping or a
+source address validation mechanism <span>[<a href="#RFC7513" class="cite xref">RFC7513</a>]</span>, using the
+link-local address only as a fallback. Where only link-local
+addresses are available, origination has to track changes of
+identity through Neighbor Discovery rather than assume that the
+first address seen persists. Where a global address is used, it
+<span class="bcp14">MUST</span> be a stable one: temporary addresses <span>[<a href="#RFC8981" class="cite xref">RFC8981</a>]</span> are
+designed to rotate and are unsuitable as a next-hop identity.<a href="#section-6.9-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="dhcpv4-relay-considerations">
+<section id="section-6.10">
+        <h3 id="name-dhcpv4-relay-considerations">
+<a href="#section-6.10" class="section-number selfRef">6.10. </a><a href="#name-dhcpv4-relay-considerations" class="section-name selfRef">DHCPv4 Relay Considerations</a>
+        </h3>
+<p id="section-6.10-1">A relay agent's interface toward the segment needs no IPv4
+address, since the segment carries no IPv4 prefix. The relay
+does need a routable IPv4 address for the giaddr field, but that
+address need not be on the segment: one loopback address per
+relaying router is sufficient, whatever the number of segments
+it relays for.<a href="#section-6.10-1" class="pilcrow">¶</a></p>
+<p id="section-6.10-2">Where giaddr would otherwise be conflated with address pool
+selection, the two are decoupled by the link selection
+sub-option <span>[<a href="#RFC3527" class="cite xref">RFC3527</a>]</span>. In practice the need for this is
+reduced, because flat /32 pools largely dissolve the question of
+which pool serves which segment. Where segment identity is still
+wanted for policy or accounting, it is carried by the relay
+agent information option circuit identifier <span>[<a href="#RFC3046" class="cite xref">RFC3046</a>]</span>.<a href="#section-6.10-2" class="pilcrow">¶</a></p>
+<p id="section-6.10-3">Relay agents that enforce on-link gateway validation may reject
+or flag <code>IPV4-SENTINEL</code> as an invalid Router Option value.
+Operators <span class="bcp14">SHOULD</span> verify relay agent behaviour in their
+deployment before relying on this mechanism.<a href="#section-6.10-3" class="pilcrow">¶</a></p>
+<p id="section-6.10-4">ICMPv4 messages sourced by a first-hop router on the segment use
+the sentinel and are interface-local (see <a href="#ingress" class="auto internal xref">Section 5.3</a>). ICMPv4
+generated further along the path, by IPv6-only transit routers
+with no interface-local sentinel to use, is a separate problem
+addressed by <span>[<a href="#RFC7600" class="cite xref">RFC7600</a>]</span>, which allocates <code>192.0.0.8/32</code> for
+that purpose.<a href="#section-6.10-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="host-implementation-considerations">
+<section id="section-6.11">
+        <h3 id="name-host-implementation-conside">
+<a href="#section-6.11" class="section-number selfRef">6.11. </a><a href="#name-host-implementation-conside" class="section-name selfRef">Host Implementation Considerations</a>
+        </h3>
+<p id="section-6.11-1">Implementations in which IPv4 and IPv6 stacks are managed by
+separate processes (as is common on mobile operating systems)
+will require inter-process communication to expose the IPv6
+neighbor cache to the IPv4 forwarding path. This is an
+implementation consideration and does not affect the on-wire
+behavior defined in this document.<a href="#section-6.11-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="security-considerations">
+<section id="section-7">
+      <h2 id="name-security-considerations">
+<a href="#section-7" class="section-number selfRef">7. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+      </h2>
+<div id="arp-attack-surface-reduction">
+<section id="section-7.1">
+        <h3 id="name-arp-attack-surface-reductio">
+<a href="#section-7.1" class="section-number selfRef">7.1. </a><a href="#name-arp-attack-surface-reductio" class="section-name selfRef">ARP Attack Surface Reduction</a>
+        </h3>
+<p id="section-7.1-1">In the updated-host deployment model, ARP is eliminated from the
+segment entirely. In the unmodified-host model, ARP is constrained
+to the sentinel address from a known source (the first-hop
+router), eliminating the class of ARP-based network reconnaissance
+and spoofing attacks that are possible in conventional subnet
+deployments. Broadcast traffic is reduced to a single predictable
+ARP exchange per unmodified host at startup, compared to
+continuous ARP traffic across a conventional subnet.<a href="#section-7.1-1" class="pilcrow">¶</a></p>
+<p id="section-7.1-2">The mechanism relies on the integrity of IPv6 Neighbor Discovery.
+Rogue RA risks apply as in any IPv6 deployment and can be
+mitigated with RA Guard <span>[<a href="#RFC6105" class="cite xref">RFC6105</a>]</span>. Subnet scanning is
+mitigated since hosts carry /32 addresses only.<a href="#section-7.1-2" class="pilcrow">¶</a></p>
+<p id="section-7.1-3">A host receiving <code>IPV4-SENTINEL</code> as its IPv4 default gateway
+on a network that does not implement this mechanism will issue
+an ARP request that receives no response, causing IPv4
+connectivity to fail silently. Operators <span class="bcp14">SHOULD</span> ensure
+<code>IPV4-SENTINEL</code> is only offered via DHCPv4 on segments where
+the mechanism is deployed. DHCPv4 snooping and dynamic ARP
+inspection, where used, <span class="bcp14">MUST</span> be configured to permit ARP
+responses for <code>IPV4-SENTINEL</code> from the first-hop router.<a href="#section-7.1-3" class="pilcrow">¶</a></p>
+<p id="section-7.1-4">This mechanism does not interact with IPv4 link-local address
+configuration per <span>[<a href="#RFC3927" class="cite xref">RFC3927</a>]</span>. A host configured with
+<code>IPV4-SENTINEL</code> as its gateway and a link-local IPv4 source
+address will follow the same resolution logic defined in
+<a href="#host-behavior" class="auto internal xref">Section 4</a>.<a href="#section-7.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="universal-gateway-address">
+<section id="section-7.2">
+        <h3 id="name-universal-gateway-address">
+<a href="#section-7.2" class="section-number selfRef">7.2. </a><a href="#name-universal-gateway-address" class="section-name selfRef">Universal Gateway Address</a>
+        </h3>
+<p id="section-7.2-1">A consequence of the IANA allocation and the ARP behavior
+defined in <a href="#arp-compat" class="auto internal xref">Section 5.4</a> is that <code>IPV4-SENTINEL</code> can serve as a
+topology-independent gateway address in any deployment where
+routers respond to ARP for it, not limited to IPv6-only
+segments. This document does not specify or require this
+behavior in IPv4-only deployments; it is an emergent property
+of the allocation.<a href="#section-7.2-1" class="pilcrow">¶</a></p>
+<p id="section-7.2-2">In segments where routers respond to ARP for <code>IPV4-SENTINEL</code>,
+it functions as a universal gateway address. Unlike a
+conventional per-subnet gateway address, it does not reveal
+network topology and carries no subnet membership information.
+ARP cache poisoning of <code>IPV4-SENTINEL</code> is less valuable than
+poisoning a conventional gateway address, as it carries no
+topological information for an attacker to exploit; it can
+only redirect local-segment traffic, mitigated by dynamic ARP
+inspection. Rogue RA attacks achieve the same redirection and
+are mitigated by RA Guard <span>[<a href="#RFC6105" class="cite xref">RFC6105</a>]</span>.<a href="#section-7.2-2" class="pilcrow">¶</a></p>
+<p id="section-7.2-3">As <code>IPV4-SENTINEL</code> <span class="bcp14">MUST NOT</span> appear as source or destination in
+any forwarded packet per <a href="#ingress" class="auto internal xref">Section 5.3</a>, conformant deployments
+render it unreachable from any device not on the local segment.
+This eliminates it as a target for off-link attacks. As
+Source=False in the IANA registry (see IANA Considerations),
+no conformant off-link device will originate packets with
+<code>IPV4-SENTINEL</code> as source, precluding volumetric attacks using
+this address.<a href="#section-7.2-3" class="pilcrow">¶</a></p>
+<p id="section-7.2-4">IPv6 has long used specific link-local addresses (fe80::) as
+next-hop addresses, topology-independent identifiers that
+work on any segment without carrying subnet membership
+information. <code>IPV4-SENTINEL</code> provides the same property for IPv4.<a href="#section-7.2-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="implementation">
+<section id="section-8">
+      <h2 id="name-implementation-requirements">
+<a href="#section-8" class="section-number selfRef">8. </a><a href="#name-implementation-requirements" class="section-name selfRef">Implementation Requirements</a>
+      </h2>
+<p id="section-8-1">An implementation is conformant if it satisfies all <span class="bcp14">MUST</span>
+and <span class="bcp14">MUST NOT</span> requirements in Sections 4 and 5.<a href="#section-8-1" class="pilcrow">¶</a></p>
+<p id="section-8-2">A reference implementation in Linux userspace is available
+at https://github.com/remcovanmook/v4-with-v6-nh.
+A full conformance test suite will be documented prior to
+IETF Last Call.<a href="#section-8-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="iana">
+<section id="section-9">
+      <h2 id="name-iana-considerations">
+<a href="#section-9" class="section-number selfRef">9. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
+      </h2>
+<p id="section-9-1">This document requests that IANA assign a single IPv4 address from
+the 192.0.0.0/24 IETF Protocol Assignments block in the
+"IANA IPv4 Special-Purpose Address Registry" <span>[<a href="#RFC6890" class="cite xref">RFC6890</a>]</span>. The
+address <code>192.0.0.11/32</code> is suggested. The assigned value is
+referred to as <code>IPV4-SENTINEL</code> (TBD1) throughout this document.<a href="#section-9-1" class="pilcrow">¶</a></p>
+<table class="center" id="table-1">
+        <caption><a href="#table-1" class="selfRef">Table 1</a></caption>
+<thead>
+          <tr>
+            <th class="text-left" rowspan="1" colspan="1">Field</th>
+            <th class="text-left" rowspan="1" colspan="1">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">Address Block</td>
+            <td class="text-left" rowspan="1" colspan="1">TBD1 (suggested: 192.0.0.11/32)</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">Name</td>
+            <td class="text-left" rowspan="1" colspan="1">IPv4 Gateway via IPv6 Resolution</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">RFC</td>
+            <td class="text-left" rowspan="1" colspan="1">This document</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">Allocation Date</td>
+            <td class="text-left" rowspan="1" colspan="1">(date of publication)</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">Termination Date</td>
+            <td class="text-left" rowspan="1" colspan="1">N/A</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">Source</td>
+            <td class="text-left" rowspan="1" colspan="1">True</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">Destination</td>
+            <td class="text-left" rowspan="1" colspan="1">True</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">Forwardable</td>
+            <td class="text-left" rowspan="1" colspan="1">False</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">Globally Reachable</td>
+            <td class="text-left" rowspan="1" colspan="1">False</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">Reserved-by-Protocol</td>
+            <td class="text-left" rowspan="1" colspan="1">False</td>
+          </tr>
+        </tbody>
+      </table>
+<p id="section-9-3">The Destination=True designation reflects that <code>IPV4-SENTINEL</code>
+may appear as a destination in ICMPv4 messages received by
+the router on a local interface (see <a href="#ingress" class="auto internal xref">Section 5.3</a>). It does
+not imply global reachability; Forwardable=False and
+Globally Reachable=False together preclude any use of this
+address beyond the local link.<a href="#section-9-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="sec-combined-references">
+<section id="section-10">
+      <h2 id="name-references">
+<a href="#section-10" class="section-number selfRef">10. </a><a href="#name-references" class="section-name selfRef">References</a>
+      </h2>
+<div id="sec-normative-references">
+<section id="section-10.1">
+        <h3 id="name-normative-references">
+<a href="#section-10.1" class="section-number selfRef">10.1. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
+        </h3>
+<dl class="references">
+<dt id="RFC2119">[RFC2119]</dt>
+        <dd>
+<span class="refAuthor">Bradner, S.</span>, <span class="refTitle">"Key words for use in RFCs to Indicate Requirement Levels"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 2119</span>, <span class="seriesInfo">DOI 10.17487/RFC2119</span>, <time datetime="1997-03" class="refDate">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2119">https://www.rfc-editor.org/rfc/rfc2119</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC4191">[RFC4191]</dt>
+        <dd>
+<span class="refAuthor">Draves, R.</span> and <span class="refAuthor">D. Thaler</span>, <span class="refTitle">"Default Router Preferences and More-Specific Routes"</span>, <span class="seriesInfo">RFC 4191</span>, <span class="seriesInfo">DOI 10.17487/RFC4191</span>, <time datetime="2005-11" class="refDate">November 2005</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc4191">https://www.rfc-editor.org/rfc/rfc4191</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC4861">[RFC4861]</dt>
+        <dd>
+<span class="refAuthor">Narten, T.</span>, <span class="refAuthor">Nordmark, E.</span>, <span class="refAuthor">Simpson, W.</span>, and <span class="refAuthor">H. Soliman</span>, <span class="refTitle">"Neighbor Discovery for IP version 6 (IPv6)"</span>, <span class="seriesInfo">RFC 4861</span>, <span class="seriesInfo">DOI 10.17487/RFC4861</span>, <time datetime="2007-09" class="refDate">September 2007</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc4861">https://www.rfc-editor.org/rfc/rfc4861</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC6890">[RFC6890]</dt>
+        <dd>
+<span class="refAuthor">Cotton, M.</span>, <span class="refAuthor">Vegoda, L.</span>, <span class="refAuthor">Bonica, R., Ed.</span>, and <span class="refAuthor">B. Haberman</span>, <span class="refTitle">"Special-Purpose IP Address Registries"</span>, <span class="seriesInfo">BCP 153</span>, <span class="seriesInfo">RFC 6890</span>, <span class="seriesInfo">DOI 10.17487/RFC6890</span>, <time datetime="2013-04" class="refDate">April 2013</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc6890">https://www.rfc-editor.org/rfc/rfc6890</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8174">[RFC8174]</dt>
+        <dd>
+<span class="refAuthor">Leiba, B.</span>, <span class="refTitle">"Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 8174</span>, <span class="seriesInfo">DOI 10.17487/RFC8174</span>, <time datetime="2017-05" class="refDate">May 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8174">https://www.rfc-editor.org/rfc/rfc8174</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8950">[RFC8950]</dt>
+      <dd>
+<span class="refAuthor">Litkowski, S.</span>, <span class="refAuthor">Agrawal, S.</span>, <span class="refAuthor">Ananthamurthy, K.</span>, and <span class="refAuthor">K. Patel</span>, <span class="refTitle">"Advertising IPv4 Network Layer Reachability Information (NLRI) with an IPv6 Next Hop"</span>, <span class="seriesInfo">RFC 8950</span>, <span class="seriesInfo">DOI 10.17487/RFC8950</span>, <time datetime="2020-11" class="refDate">November 2020</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8950">https://www.rfc-editor.org/rfc/rfc8950</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+</div>
+<div id="sec-informative-references">
+<section id="section-10.2">
+        <h3 id="name-informative-references">
+<a href="#section-10.2" class="section-number selfRef">10.2. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
+        </h3>
+<dl class="references">
+<dt id="CALICO-FAQ">[CALICO-FAQ]</dt>
+        <dd>
+<span class="refAuthor">Project Calico</span>, <span class="refTitle">"Calico Documentation: Frequently Asked Questions"</span>, <time datetime="2026" class="refDate">2026</time>, <span>&lt;<a href="https://docs.tigera.io/calico/latest/reference/faq">https://docs.tigera.io/calico/latest/reference/faq</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.ietf-intarea-v4-via-v6">[I-D.ietf-intarea-v4-via-v6]</dt>
+        <dd>
+<span class="refAuthor">Chroboczek, J.</span>, <span class="refAuthor">Kumari, W.</span>, and <span class="refAuthor">T. Høiland-Jørgensen</span>, <span class="refTitle">"IPv4 routes with an IPv6 next hop"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-intarea-v4-via-v6-08</span>, <time datetime="2026-04-17" class="refDate">17 April 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-intarea-v4-via-v6-08">https://datatracker.ietf.org/doc/html/draft-ietf-intarea-v4-via-v6-08</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.ietf-v6ops-6mops">[I-D.ietf-v6ops-6mops]</dt>
+        <dd>
+<span class="refAuthor">Buraglio, N.</span>, <span class="refAuthor">Caletka, O.</span>, and <span class="refAuthor">J. Linkova</span>, <span class="refTitle">"IPv6-mostly Networks: Deployment and Operations Considerations"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-v6ops-6mops-10</span>, <time datetime="2026-09-10" class="refDate">10 September 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-v6ops-6mops-10">https://datatracker.ietf.org/doc/html/draft-ietf-v6ops-6mops-10</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.ietf-v6ops-claton">[I-D.ietf-v6ops-claton]</dt>
+        <dd>
+<span class="refAuthor">Colitti, L.</span>, <span class="refAuthor">Linkova, J.</span>, and <span class="refAuthor">T. Jensen</span>, <span class="refTitle">"464XLAT Customer-side Translator (CLAT): Node Behavior and Recommendations"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-v6ops-claton-16</span>, <time datetime="2026-03-05" class="refDate">5 March 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-v6ops-claton-16">https://datatracker.ietf.org/doc/html/draft-ietf-v6ops-claton-16</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC925">[RFC925]</dt>
+        <dd>
+<span class="refAuthor">Postel, J.</span>, <span class="refTitle">"Multi-LAN address resolution"</span>, <span class="seriesInfo">RFC 925</span>, <span class="seriesInfo">DOI 10.17487/RFC925</span>, <time datetime="1984-10" class="refDate">October 1984</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc925">https://www.rfc-editor.org/rfc/rfc925</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC1027">[RFC1027]</dt>
+        <dd>
+<span class="refAuthor">Carl-Mitchell, S.</span> and <span class="refAuthor">J. Quarterman</span>, <span class="refTitle">"Using ARP to implement transparent subnet gateways"</span>, <span class="seriesInfo">RFC 1027</span>, <span class="seriesInfo">DOI 10.17487/RFC1027</span>, <time datetime="1987-10" class="refDate">October 1987</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc1027">https://www.rfc-editor.org/rfc/rfc1027</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC1122">[RFC1122]</dt>
+        <dd>
+<span class="refAuthor">Braden, R., Ed.</span>, <span class="refTitle">"Requirements for Internet Hosts - Communication Layers"</span>, <span class="seriesInfo">STD 3</span>, <span class="seriesInfo">RFC 1122</span>, <span class="seriesInfo">DOI 10.17487/RFC1122</span>, <time datetime="1989-10" class="refDate">October 1989</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc1122">https://www.rfc-editor.org/rfc/rfc1122</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC1918">[RFC1918]</dt>
+        <dd>
+<span class="refAuthor">Rekhter, Y.</span>, <span class="refAuthor">Moskowitz, B.</span>, <span class="refAuthor">Karrenberg, D.</span>, <span class="refAuthor">de Groot, G. J.</span>, and <span class="refAuthor">E. Lear</span>, <span class="refTitle">"Address Allocation for Private Internets"</span>, <span class="seriesInfo">BCP 5</span>, <span class="seriesInfo">RFC 1918</span>, <span class="seriesInfo">DOI 10.17487/RFC1918</span>, <time datetime="1996-02" class="refDate">February 1996</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc1918">https://www.rfc-editor.org/rfc/rfc1918</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC2132">[RFC2132]</dt>
+        <dd>
+<span class="refAuthor">Alexander, S.</span> and <span class="refAuthor">R. Droms</span>, <span class="refTitle">"DHCP Options and BOOTP Vendor Extensions"</span>, <span class="seriesInfo">RFC 2132</span>, <span class="seriesInfo">DOI 10.17487/RFC2132</span>, <time datetime="1997-03" class="refDate">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2132">https://www.rfc-editor.org/rfc/rfc2132</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC2516">[RFC2516]</dt>
+        <dd>
+<span class="refAuthor">Mamakos, L.</span>, <span class="refAuthor">Lidl, K.</span>, <span class="refAuthor">Evarts, J.</span>, <span class="refAuthor">Carrel, D.</span>, <span class="refAuthor">Simone, D.</span>, and <span class="refAuthor">R. Wheeler</span>, <span class="refTitle">"A Method for Transmitting PPP Over Ethernet (PPPoE)"</span>, <span class="seriesInfo">RFC 2516</span>, <span class="seriesInfo">DOI 10.17487/RFC2516</span>, <time datetime="1999-02" class="refDate">February 1999</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2516">https://www.rfc-editor.org/rfc/rfc2516</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC3046">[RFC3046]</dt>
+        <dd>
+<span class="refAuthor">Patrick, M.</span>, <span class="refTitle">"DHCP Relay Agent Information Option"</span>, <span class="seriesInfo">RFC 3046</span>, <span class="seriesInfo">DOI 10.17487/RFC3046</span>, <time datetime="2001-01" class="refDate">January 2001</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc3046">https://www.rfc-editor.org/rfc/rfc3046</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC3442">[RFC3442]</dt>
+        <dd>
+<span class="refAuthor">Lemon, T.</span>, <span class="refAuthor">Cheshire, S.</span>, and <span class="refAuthor">B. Volz</span>, <span class="refTitle">"The Classless Static Route Option for Dynamic Host Configuration Protocol (DHCP) version 4"</span>, <span class="seriesInfo">RFC 3442</span>, <span class="seriesInfo">DOI 10.17487/RFC3442</span>, <time datetime="2002-12" class="refDate">December 2002</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc3442">https://www.rfc-editor.org/rfc/rfc3442</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC3527">[RFC3527]</dt>
+        <dd>
+<span class="refAuthor">Kinnear, K.</span>, <span class="refAuthor">Stapp, M.</span>, <span class="refAuthor">Johnson, R.</span>, and <span class="refAuthor">J. Kumarasamy</span>, <span class="refTitle">"Link Selection sub-option for the Relay Agent Information Option for DHCPv4"</span>, <span class="seriesInfo">RFC 3527</span>, <span class="seriesInfo">DOI 10.17487/RFC3527</span>, <time datetime="2003-04" class="refDate">April 2003</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc3527">https://www.rfc-editor.org/rfc/rfc3527</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC3927">[RFC3927]</dt>
+        <dd>
+<span class="refAuthor">Cheshire, S.</span>, <span class="refAuthor">Aboba, B.</span>, and <span class="refAuthor">E. Guttman</span>, <span class="refTitle">"Dynamic Configuration of IPv4 Link-Local Addresses"</span>, <span class="seriesInfo">RFC 3927</span>, <span class="seriesInfo">DOI 10.17487/RFC3927</span>, <time datetime="2005-05" class="refDate">May 2005</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc3927">https://www.rfc-editor.org/rfc/rfc3927</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC5737">[RFC5737]</dt>
+        <dd>
+<span class="refAuthor">Arkko, J.</span>, <span class="refAuthor">Cotton, M.</span>, and <span class="refAuthor">L. Vegoda</span>, <span class="refTitle">"IPv4 Address Blocks Reserved for Documentation"</span>, <span class="seriesInfo">RFC 5737</span>, <span class="seriesInfo">DOI 10.17487/RFC5737</span>, <time datetime="2010-01" class="refDate">January 2010</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc5737">https://www.rfc-editor.org/rfc/rfc5737</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC6105">[RFC6105]</dt>
+        <dd>
+<span class="refAuthor">Levy-Abegnoli, E.</span>, <span class="refAuthor">Van de Velde, G.</span>, <span class="refAuthor">Popoviciu, C.</span>, and <span class="refAuthor">J. Mohacsi</span>, <span class="refTitle">"IPv6 Router Advertisement Guard"</span>, <span class="seriesInfo">RFC 6105</span>, <span class="seriesInfo">DOI 10.17487/RFC6105</span>, <time datetime="2011-02" class="refDate">February 2011</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc6105">https://www.rfc-editor.org/rfc/rfc6105</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC6877">[RFC6877]</dt>
+        <dd>
+<span class="refAuthor">Mawatari, M.</span>, <span class="refAuthor">Kawashima, M.</span>, and <span class="refAuthor">C. Byrne</span>, <span class="refTitle">"464XLAT: Combination of Stateful and Stateless Translation"</span>, <span class="seriesInfo">RFC 6877</span>, <span class="seriesInfo">DOI 10.17487/RFC6877</span>, <time datetime="2013-04" class="refDate">April 2013</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc6877">https://www.rfc-editor.org/rfc/rfc6877</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC7217">[RFC7217]</dt>
+        <dd>
+<span class="refAuthor">Gont, F.</span>, <span class="refTitle">"A Method for Generating Semantically Opaque Interface Identifiers with IPv6 Stateless Address Autoconfiguration (SLAAC)"</span>, <span class="seriesInfo">RFC 7217</span>, <span class="seriesInfo">DOI 10.17487/RFC7217</span>, <time datetime="2014-04" class="refDate">April 2014</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7217">https://www.rfc-editor.org/rfc/rfc7217</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC7513">[RFC7513]</dt>
+        <dd>
+<span class="refAuthor">Bi, J.</span>, <span class="refAuthor">Wu, J.</span>, <span class="refAuthor">Yao, G.</span>, and <span class="refAuthor">F. Baker</span>, <span class="refTitle">"Source Address Validation Improvement (SAVI) Solution for DHCP"</span>, <span class="seriesInfo">RFC 7513</span>, <span class="seriesInfo">DOI 10.17487/RFC7513</span>, <time datetime="2015-05" class="refDate">May 2015</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7513">https://www.rfc-editor.org/rfc/rfc7513</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC7600">[RFC7600]</dt>
+        <dd>
+<span class="refAuthor">Despres, R.</span>, <span class="refAuthor">Jiang, S., Ed.</span>, <span class="refAuthor">Penno, R.</span>, <span class="refAuthor">Lee, Y.</span>, <span class="refAuthor">Chen, G.</span>, and <span class="refAuthor">M. Chen</span>, <span class="refTitle">"IPv4 Residual Deployment via IPv6 - A Stateless Solution (4rd)"</span>, <span class="seriesInfo">RFC 7600</span>, <span class="seriesInfo">DOI 10.17487/RFC7600</span>, <time datetime="2015-07" class="refDate">July 2015</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7600">https://www.rfc-editor.org/rfc/rfc7600</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8585">[RFC8585]</dt>
+        <dd>
+<span class="refAuthor">Palet Martinez, J.</span>, <span class="refAuthor">Liu, H. M.-H.</span>, and <span class="refAuthor">M. Kawashima</span>, <span class="refTitle">"Requirements for IPv6 Customer Edge Routers to Support IPv4-as-a-Service"</span>, <span class="seriesInfo">RFC 8585</span>, <span class="seriesInfo">DOI 10.17487/RFC8585</span>, <time datetime="2019-05" class="refDate">May 2019</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8585">https://www.rfc-editor.org/rfc/rfc8585</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8925">[RFC8925]</dt>
+        <dd>
+<span class="refAuthor">Colitti, L.</span>, <span class="refAuthor">Linkova, J.</span>, <span class="refAuthor">Richardson, M.</span>, and <span class="refAuthor">T. Mrugalski</span>, <span class="refTitle">"IPv6-Only Preferred Option for DHCPv4"</span>, <span class="seriesInfo">RFC 8925</span>, <span class="seriesInfo">DOI 10.17487/RFC8925</span>, <time datetime="2020-10" class="refDate">October 2020</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8925">https://www.rfc-editor.org/rfc/rfc8925</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8981">[RFC8981]</dt>
+      <dd>
+<span class="refAuthor">Gont, F.</span>, <span class="refAuthor">Krishnan, S.</span>, <span class="refAuthor">Narten, T.</span>, and <span class="refAuthor">R. Draves</span>, <span class="refTitle">"Temporary Address Extensions for Stateless Address Autoconfiguration in IPv6"</span>, <span class="seriesInfo">RFC 8981</span>, <span class="seriesInfo">DOI 10.17487/RFC8981</span>, <time datetime="2021-02" class="refDate">February 2021</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8981">https://www.rfc-editor.org/rfc/rfc8981</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+</div>
+</section>
+</div>
+<div id="acknowledgements">
+<section id="appendix-A">
+      <h2 id="name-acknowledgements">
+<a href="#appendix-A" class="section-number selfRef">Appendix A. </a><a href="#name-acknowledgements" class="section-name selfRef">Acknowledgements</a>
+      </h2>
+<p id="appendix-A-1">The author thanks Tobias Fiebig, Warren Kumari, Jen Linkova,
+David Lamparter, and Jordi Palet Martinez for their feedback
+and review. An earlier version of this work was presented as
+a lightning talk at RIPE 91 in Bucharest (October 2025) and
+at IETF 124 in Montreal (November 2025).<a href="#appendix-A-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="authors-addresses">
+<section id="appendix-B">
+      <h2 id="name-authors-address">
+<a href="#name-authors-address" class="section-name selfRef">Author's Address</a>
+      </h2>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Remco van Mook</span></div>
+<div dir="auto" class="left"><span class="org">Asteroid International B.V.</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:remco@asteroidhq.com" class="email">remco@asteroidhq.com</a>
+</div>
+</address>
+</section>
+</div>
+<script>const toc = document.getElementById("toc");
+toc.querySelector("h2").addEventListener("click", e => {
+  toc.classList.toggle("active");
+});
+toc.querySelector("nav").addEventListener("click", e => {
+  toc.classList.remove("active");
+});
+</script>
+</body>
+</html>
