@@ -216,7 +216,7 @@ segment. This document closes the first-hop resolution gap
 for dual-stack hosts on IPv6-only segments without requiring
 changes to host software, packet formats, or DHCPv4 clients.
 
-# Host Behavior and Next-Hop Resolution
+# Host Behavior and Next-Hop Resolution {#host-behavior}
 
 This mechanism activates only when a functional IPv6
 implementation is present on the same interface, sufficient
@@ -457,6 +457,36 @@ IPv6 link-local: fe80::R2   IPv6: 2001:db8:2::2
 
 No ARP is exchanged at any point.
 
+## Router-to-Host Binding Durability {#durability}
+
+A first-hop router MUST be able, for the lifetime of a host's
+IPv4 address assignment, to deliver IPv4 traffic to that host's
+/32 without depending on opportunistically learned neighbor
+cache state.
+
+The failure mode this prohibits is the following. A router that
+learns a host's link-layer address only as a side effect of
+traffic, and holds the resulting IPv6 neighbor cache entry under
+ordinary garbage collection, will discard that entry once the
+host has been idle long enough. If the host's /32 route is
+derived from that entry, the route is withdrawn with it, and
+inbound traffic that would have prompted re-resolution never
+arrives, because it is discarded upstream for want of a route.
+Connectivity then does not recover, and the host cannot recover
+it, since the host has no way to learn that it has become
+unreachable from outside. Outbound traffic from the host
+repairs the binding, but a host with no reason to send will
+remain unreachable indefinitely.
+
+Satisfying this requirement is a matter of router
+implementation and operator configuration, and the mechanisms
+are outside the scope of this document. They include deriving
+the binding from DHCPv4 lease state rather than from traffic,
+provoking Neighbor Discovery from that lease state, populating
+the binding from an orchestration or route distribution system,
+and anchoring it to a delegated prefix. A separate document is
+expected to catalogue acceptable configurations.
+
 ## Router Ingress Behavior {#ingress}
 
 Routers MUST treat `IPV4-SENTINEL` as an interface-scoped
@@ -479,7 +509,7 @@ interface-local.
 ICMPv4 error generation on IPv6-only transit routers is out of
 scope; see {{RFC7600}}.
 
-## Backward Compatibility: Router ARP Response
+## Backward Compatibility: Router ARP Response {#arp-compat}
 
 The use of `IPV4-SENTINEL` as the DHCPv4 Router Option (Option 3)
 value is fully conformant with {{RFC2132}}, which imposes no
@@ -590,12 +620,12 @@ This mechanism does not interact with IPv4 link-local address
 configuration per {{RFC3927}}. A host configured with
 `IPV4-SENTINEL` as its gateway and a link-local IPv4 source
 address will follow the same resolution logic defined in
-Section 4 (Host Behavior and Next-Hop Resolution).
+{{host-behavior}}.
 
 ## Universal Gateway Address
 
 A consequence of the IANA allocation and the ARP behavior
-defined in Section 5.3 is that `IPV4-SENTINEL` can serve as a
+defined in {{arp-compat}} is that `IPV4-SENTINEL` can serve as a
 topology-independent gateway address in any deployment where
 routers respond to ARP for it, not limited to IPv6-only
 segments. This document does not specify or require this
@@ -614,7 +644,7 @@ inspection. Rogue RA attacks achieve the same redirection and
 are mitigated by RA Guard {{RFC6105}}.
 
 As `IPV4-SENTINEL` MUST NOT appear as source or destination in
-any forwarded packet per Section 5.2, conformant deployments
+any forwarded packet per {{ingress}}, conformant deployments
 render it unreachable from any device not on the local segment.
 This eliminates it as a target for off-link attacks. As
 Source=False in the IANA registry (see IANA Considerations),
@@ -660,7 +690,7 @@ referred to as `IPV4-SENTINEL` (TBD1) throughout this document.
 
 The Destination=True designation reflects that `IPV4-SENTINEL`
 may appear as a destination in ICMPv4 messages received by
-the router on a local interface (see Section 5.2). It does
+the router on a local interface (see {{ingress}}). It does
 not imply global reachability; Forwardable=False and
 Globally Reachable=False together preclude any use of this
 address beyond the local link.
