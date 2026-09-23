@@ -536,6 +536,25 @@ tiers simultaneously: updated hosts will not send ARP
 requests for `IPV4-SENTINEL`, so the router's ARP response
 behavior is triggered only by unmodified hosts.
 
+The ARP responder is migration machinery, and it is under
+operator control. It exists so that unmodified hosts keep
+working while a segment is being converted. An operator SHOULD
+enable it for as long as unmodified hosts remain on the segment,
+and SHOULD disable it once none do. The two-tier model is a
+transitional state rather than the end state: on a fully
+migrated segment no ARP is exchanged at all, the router's own
+responder included.
+
+The requirement in {{host-behavior}} that a host MUST NOT
+perform ARP for the sentinel is correspondingly strict, and this
+document deliberately defines no host-side fallback to ARP. A
+sanctioned fallback would mean that no operator could safely
+retire the responder on any segment, since a conformant host
+might resort to ARP at any time. The zero-ARP end state would be
+foreclosed permanently, and the return would be the masking of
+a misconfiguration that is better surfaced (see
+{{security-considerations}}).
+
 # Deployment Considerations
 
 This mechanism applies granularly at the segment level. A network
@@ -589,7 +608,7 @@ may reject or flag `IPV4-SENTINEL` as an invalid router option.
 Operators SHOULD verify relay agent behavior in their
 deployment before relying on this mechanism.
 
-# Security Considerations
+# Security Considerations {#security-considerations}
 
 ## ARP Attack Surface Reduction
 
