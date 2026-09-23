@@ -111,7 +111,7 @@ DHCPv4 clients or servers and is incrementally deployable
 today.
 
 The mechanism has been verified to work without changes to
-applications or DHCPv4 configuration on Windows 11, macOS,
+applications or DHCPv4 client configuration on Windows 11, macOS,
 Android, iOS, Linux, FreeBSD, and ChromeOS.
 
 This document addresses the host-side first-hop gap left open
