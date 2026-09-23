@@ -49,6 +49,11 @@ informative:
   RFC7513:
   RFC8981:
   RFC8585:
+  IANA-IPV4-SPECIAL:
+    target: https://www.iana.org/assignments/iana-ipv4-special-registry/
+    title: "IPv4 Special-Purpose Address Registry"
+    author:
+      - org: "IANA"
   CALICO-FAQ:
     target: https://docs.tigera.io/calico/latest/reference/faq
     title: "Calico Documentation: Frequently Asked Questions"
@@ -1032,6 +1037,9 @@ IETF Last Call.
 This document requests that IANA assign a single IPv4 address from
 the 192.0.0.0/24 IETF Protocol Assignments block in the
 "IANA IPv4 Special-Purpose Address Registry" {{RFC6890}}. The
+current contents of that registry are maintained by IANA at
+{{IANA-IPV4-SPECIAL}}; {{RFC6890}} defines the registry and its
+fields, but its tables are a snapshot taken at publication. The
 address `192.0.0.11/32` is suggested. The assigned value is
 referred to as `IPV4-SENTINEL` (TBD1) throughout this document.
 
