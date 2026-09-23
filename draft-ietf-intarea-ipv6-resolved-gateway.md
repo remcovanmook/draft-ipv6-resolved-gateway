@@ -37,8 +37,17 @@ normative:
   RFC8950:
 
 informative:
+  RFC925:
   RFC1027:
   RFC1122:
+  RFC2516:
+  RFC8585:
+  CALICO-FAQ:
+    target: https://docs.tigera.io/calico/latest/reference/faq
+    title: "Calico Documentation: Frequently Asked Questions"
+    author:
+      - org: "Project Calico"
+    date: 2026
   I-D.ietf-intarea-v4-via-v6:
   RFC5737:
   RFC2132:
@@ -136,6 +145,45 @@ two documents provide a complete solution: hosts reach their
 first-hop router without ARP, and routers forward IPv4 traffic
 across an IPv6-only infrastructure without IPv4 addresses on
 any router interface.
+
+## Related Work
+
+The underlying pattern -- a first-hop IPv4 gateway that is not
+resolved by ordinary ARP against a shared on-link subnet -- has
+been independently reinvented many times, in mutually
+incompatible forms.
+
+Proxy ARP {{RFC925}} {{RFC1027}} had a router answer ARP on
+behalf of addresses that were not on the requesting host's link.
+Point-to-point access architectures, among them PPPoE
+{{RFC2516}} and 3GPP bearers, deliver an IPv4 address to a
+terminal over a link with no subnet and no neighbor resolution
+at all. The softwires IPv4-as-a-Service family {{RFC8585}}
+carries IPv4 service across an IPv6-only access network to the
+customer edge. Container networking reached the same shape
+independently: Calico gives each workload a next-hop of
+`169.254.1.1` that is never assigned to any interface and exists
+only to be answered by proxy ARP on the host side of the
+interface pair {{CALICO-FAQ}}. The hosting-provider /32
+configurations described above are a further instance, as are
+the pre-standard arrangements for routing IPv4 over IPv6
+next-hops that preceded {{RFC8950}}.
+
+Each of these is the same idea, constrained to one domain, and
+each was previously kept there by a condition that has since
+expired. There was no standardised transport for IPv4 routes
+with IPv6 next-hops before {{RFC8950}}. Host stacks were treated
+as unchangeable, an assumption disproved by the deployment of
+{{RFC8925}} Option 108 and of CLAT across mainstream operating
+systems. Every prior instance lived inside a walled domain -- a
+single vendor, access technology, or orchestrator -- and so
+never needed an interoperable code point. And IPv4 service on an
+IPv6-only network was generally assumed to call for translation.
+
+Those conditions no longer hold. The contribution of this
+document is therefore not a new mechanism, but a general and
+interoperable form of one that has repeatedly been built in
+private and left undocumented.
 
 # Conventions and Definitions
 
