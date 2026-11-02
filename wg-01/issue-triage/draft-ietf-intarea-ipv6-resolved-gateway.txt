@@ -132,9 +132,9 @@ Table of Contents
    Alternative approaches such as a new DHCPv4 option would require
    client changes across every OS implementation as well as requiring
    changes across any OSS/BSS software that contains validation logic or
-   encodes the shape of an IPv4 gateway.  The sentinel looks exactly
-   like a valid gateway address to every existing system; the only place
-   that needs to know is the host.
+   encodes the shape of an IPv4 gateway.  The sentinel is a valid
+   gateway address; the only place that needs to know the special
+   semantics defined in this document is the host.
 
    Unmodified hosts, using the router's ARP response, have been verified
    to work without changes to applications or DHCPv4 client
@@ -304,8 +304,8 @@ Table of Contents
    router interface.  The mechanism by which the routing infrastructure
    learns these host routes is outside the scope of this document.
 
-   The first-hop router MUST maintain, for the lifetime of a host's
-   address assignment, the ability to deliver to that host's /32 without
+   For the lifetime of a host's address assignment, the first-hop router
+   MUST maintain the ability to deliver to that host's /32 without
    depending on opportunistically learned neighbor cache state, so that
    expiry of a cache entry cannot permanently break return traffic.
 
@@ -376,9 +376,10 @@ Table of Contents
    reachability.
 
    Unmodified hosts receiving IPV4-SENTINEL as their IPv4 default
-   gateway will issue an ARP request for it.  A router MAY respond to
-   such ARP requests with its own MAC address.  This is not proxy ARP:
-   no subnet exists, no remote host is being proxied.
+   gateway will issue an ARP request for it.  A router SHOULD respond to
+   such ARP requests with its own MAC address if unmodified hosts may be
+   on the segment, and MAY omit the response otherwise.  This is not
+   proxy ARP: no subnet exists, no remote host is being proxied.
 
    This enables a two-tier deployment model on the same L2 segment:
 
@@ -394,9 +395,9 @@ Table of Contents
    IPV4-SENTINEL, so the router's ARP response behavior is triggered
    only by unmodified hosts.
 
-   This ARP response exists for the migration period: an operator
-   enables it while unmodified hosts remain on the segment and disables
-   it thereafter, leaving the segment free of ARP.
+   Note: This ARP response exists for the migration period.  Once no
+   unmodified hosts remain on a segment, an operator can disable it,
+   leaving the segment free of ARP.
 
 5.  Deployment Considerations
 
@@ -430,10 +431,10 @@ Table of Contents
    interface cannot perform Neighbor Discovery and are outside the scope
    of this document.
 
-   The mechanism inherits ND's operational prerequisites: icmp6
-   permitted on host firewalls, functioning MLD snooping and multicast
-   forwarding, no MAC filtering of solicited-node groups.  These are
-   already prerequisites for IPv6 service.
+   The mechanism inherits ND's operational prerequisites: ICMPv6
+   [RFC4443] permitted on host firewalls, functioning MLD snooping and
+   multicast forwarding, no MAC filtering of solicited-node groups.
+   These are already prerequisites for IPv6 service.
 
    On segments with multiple routers advertising equal Default Router
    Preference (common in datacenter ECMP fabrics), hosts may make
@@ -610,6 +611,12 @@ Table of Contents
               DOI 10.17487/RFC3927, May 2005,
               <https://www.rfc-editor.org/rfc/rfc3927>.
 
+   [RFC4443]  Conta, A., Deering, S., and M. Gupta, Ed., "Internet
+              Control Message Protocol (ICMPv6) for the Internet
+              Protocol Version 6 (IPv6) Specification", STD 89,
+              RFC 4443, DOI 10.17487/RFC4443, March 2006,
+              <https://www.rfc-editor.org/rfc/rfc4443>.
+
    [RFC5737]  Arkko, J., Cotton, M., and L. Vegoda, "IPv4 Address Blocks
               Reserved for Documentation", RFC 5737,
               DOI 10.17487/RFC5737, January 2010,
@@ -686,4 +693,4 @@ Authors' Addresses
 
    Tobias Fiebig
    TU Wien
-   Email: tobias@fiebig.at
+   Email: tobias@internet.wien
