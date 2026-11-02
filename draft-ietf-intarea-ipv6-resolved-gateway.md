@@ -33,7 +33,7 @@ author:
     ins: T. Fiebig
     name: Tobias Fiebig
     org: TU Wien
-    email: tobias@fiebig.at
+    email: tobias@internet.wien
 
 normative:
   RFC4191:
@@ -53,6 +53,7 @@ informative:
   RFC2132:
   RFC3527:
   RFC3927:
+  RFC4443:
   RFC6105:
   RFC7600:
   RFC7942:
@@ -115,9 +116,9 @@ implement natively. Alternative
 approaches such as a new DHCPv4 option would require client changes
 across every OS implementation as well as requiring changes across
 any OSS/BSS software that contains validation logic or encodes the
-shape of an IPv4 gateway. The sentinel looks exactly like a valid
-gateway address to every existing system; the only place that needs
-to know is the host.
+shape of an IPv4 gateway. The sentinel is a valid gateway address;
+the only place that needs to know the special semantics defined in
+this document is the host.
 
 Unmodified hosts, using the router's ARP response, have been
 verified to work without changes to applications or DHCPv4 client
@@ -287,11 +288,10 @@ requiring IPv4 addresses on any router interface. The mechanism
 by which the routing infrastructure learns these host routes is
 outside the scope of this document.
 
-The first-hop router MUST maintain, for the lifetime of a host's
-address assignment, the ability to deliver to that host's /32
-without depending on opportunistically learned neighbor cache
-state, so that expiry of a cache entry cannot permanently break
-return traffic.
+For the lifetime of a host's address assignment, the first-hop router
+MUST maintain the ability to deliver to that host's /32 without
+depending on opportunistically learned neighbor cache state, so that
+expiry of a cache entry cannot permanently break return traffic.
 
 The following diagram illustrates the end-to-end packet flow.
 Router-to-router forwarding uses {{RFC8950}}; no IPv4 address
@@ -361,9 +361,10 @@ is not proxying for a remote host; it owns this address on
 the interface for the purpose of link-layer reachability.
 
 Unmodified hosts receiving `IPV4-SENTINEL` as their IPv4 default
-gateway will issue an ARP request for it. A router MAY respond
-to such ARP requests with its own MAC address. This is not proxy
-ARP: no subnet exists, no remote host is being proxied.
+gateway will issue an ARP request for it. A router SHOULD respond
+to such ARP requests with its own MAC address if unmodified hosts
+may be on the segment, and MAY omit the response otherwise. This
+is not proxy ARP: no subnet exists, no remote host is being proxied.
 
 This enables a two-tier deployment model on the same L2 segment:
 
@@ -378,9 +379,9 @@ tiers simultaneously: updated hosts will not send ARP
 requests for `IPV4-SENTINEL`, so the router's ARP response
 behavior is triggered only by unmodified hosts.
 
-This ARP response exists for the migration period: an operator
-enables it while unmodified hosts remain on the segment and
-disables it thereafter, leaving the segment free of ARP.
+Note: This ARP response exists for the migration period. Once no
+unmodified hosts remain on a segment, an operator can disable it,
+leaving the segment free of ARP.
 
 # Deployment Considerations
 
@@ -415,8 +416,8 @@ Hosts without a functional IPv6 implementation on the relevant
 interface cannot perform Neighbor Discovery and are outside
 the scope of this document.
 
-The mechanism inherits ND's operational prerequisites: icmp6
-permitted on host firewalls, functioning MLD snooping and
+The mechanism inherits ND's operational prerequisites: ICMPv6
+{{RFC4443}} permitted on host firewalls, functioning MLD snooping and
 multicast forwarding, no MAC filtering of solicited-node
 groups. These are already prerequisites for IPv6 service.
 
