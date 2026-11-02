@@ -4,8 +4,9 @@
 
 Internet Area Working Group                                  R. van Mook
 Internet-Draft                               Asteroid International B.V.
-Intended status: Standards Track                          27 August 2026
-Expires: 28 February 2027
+Intended status: Standards Track                               T. Fiebig
+Expires: 6 May 2027                                              TU Wien
+                                                         2 November 2026
 
 
                        IPv6-Resolved IPv4 Gateway
@@ -14,15 +15,16 @@ Expires: 28 February 2027
 Abstract
 
    This document specifies host behavior enabling IPv4 communication for
-   dual-stack hosts on IPv6-only segments, without subnets, ARP,
-   tunneling, or translation.  Hosts that receive 192.0.0.11/32 as their
-   IPv4 default gateway address resolve the next-hop link-layer address
-   from the IPv6 neighbor cache rather than via ARP.  IPv4 packets are
-   forwarded natively, end-to-end.  The mechanism is incrementally
-   deployable alongside unmodified hosts with no changes to DHCPv4
-   infrastructure.  This document requests the allocation of
-   192.0.0.11/32 in the IANA IPv4 Special-Purpose Address Registry to
-   support this mechanism.
+   dual-stack hosts on IPv6-only segments, without IPv4 subnets, ARP,
+   tunneling, or translation.  A host is provisioned by ordinary DHCPv4
+   or by static configuration.  Where its IPv4 default gateway is a
+   reserved sentinel address, the host resolves the next-hop link-layer
+   address from the IPv6 neighbor cache rather than by ARP.  IPv4
+   packets are forwarded natively, end to end.  The mechanism is
+   incrementally deployable alongside unmodified hosts; no flag day or
+   mandatory switch-over point is needed.  This document requests the
+   allocation of one IPv4 address from 192.0.0.0/24 in the IANA IPv4
+   Special-Purpose Address Registry.
 
 About This Document
 
@@ -57,7 +59,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 28 February 2027.
+   This Internet-Draft will expire on 6 May 2027.
 
 Copyright Notice
 
@@ -77,27 +79,24 @@ Table of Contents
 
    1.  Introduction
    2.  Conventions and Definitions
-   3.  Problem Statement
-   4.  Host Behavior and Next-Hop Resolution
-   5.  Router Behavior
-     5.1.  End-to-End Packet Flow
-     5.2.  Router Ingress Behavior
-     5.3.  Backward Compatibility: Router ARP Response
-   6.  Deployment Considerations
-   7.  Security Considerations
-     7.1.  ARP Attack Surface Reduction
-     7.2.  Universal Gateway Address
-   8.  Implementation Requirements
-   9.  IANA Considerations
-   10. References
-     10.1.  Normative References
-     10.2.  Informative References
-   Appendix A.  Acknowledgements
-   Author's Address
+   3.  Host Behavior and Next-Hop Resolution
+   4.  Router Behavior
+     4.1.  End-to-End Packet Flow
+     4.2.  Router Ingress Behavior
+     4.3.  Backward Compatibility: Router ARP Response
+   5.  Deployment Considerations
+   6.  Security Considerations
+   7.  IANA Considerations
+   8.  References
+     8.1.  Normative References
+     8.2.  Informative References
+   Appendix A.  Implementation Status
+   Appendix B.  Acknowledgements
+   Authors' Addresses
 
 1.  Introduction
 
-   An IPv4 address functions as a service endpoint identifier -- either
+   An IPv4 address functions as a service endpoint identifier: either
    for a client seeking access to a service, or a server providing one.
    The BSD socket API, present in virtually every operating system and
    language runtime, expresses this directly: a call to connect(AF_INET,
@@ -108,16 +107,19 @@ Table of Contents
    resolves the link-layer next-hop for the first hop.
 
    Networks transitioning to IPv6-only segments still need to carry IPv4
-   traffic for dual-stack hosts.  Traditional mechanisms such as dual-
-   stack, tunneling, and translation all reintroduce IPv4 at the
-   infrastructure level.  This document defines a sentinel IPv4 address,
-   192.0.0.11, that signals to a host stack that link-layer resolution
-   for the IPv4 default gateway is derived from the link-layer address
-   entry for the IPv6 default router in the neighbor cache [RFC4861],
-   rather than via ARP.  The IPv4 routing table entry is unchanged; only
-   the next-hop resolution path is modified.  This eliminates the need
-   for IPv4 subnets and ARP on the local segment, removing the
-   requirement for tunneling or translation at the first hop.
+   traffic for dual-stack hosts.  IPv4 next-hop resolution depends on
+   ARP, which presupposes an IPv4 subnet on the link; an IPv6-only
+   segment has none.  Dual-stack, tunneling and translation all
+   reintroduce IPv4 at the infrastructure level and require changes
+   beyond the local segment.  This document defines a sentinel IPv4
+   address, IPV4-SENTINEL, that signals to a host stack that link-layer
+   resolution for the IPv4 default gateway is derived from the link-
+   layer address entry for the IPv6 default router in the neighbor cache
+   [RFC4861], rather than via ARP.  The IPv4 routing table entry is
+   unchanged; only the next-hop resolution path is modified.  This
+   eliminates the need for IPv4 subnets and ARP on the local segment,
+   removing the requirement for tunneling or translation at the first
+   hop.
 
    This problem is already being solved in production, but
    inconsistently.  Hosting providers including Hetzner, OVH, and
@@ -127,16 +129,17 @@ Table of Contents
    any RFC, and the implementations are not interoperable across
    providers.  This draft standardises the pattern with a single
    sentinel address that host stacks can implement natively.
-   Alternative approaches (a new DHCPv4 option, or implicit behaviour
-   when no router is specified) would both require DHCPv4 client changes
-   across every OS implementation; given typical deployment timescales,
-   meaningful coverage would take a decade at best.  The sentinel
-   address approach requires no changes to DHCPv4 clients or servers and
-   is incrementally deployable today.
+   Alternative approaches such as a new DHCPv4 option would require
+   client changes across every OS implementation as well as requiring
+   changes across any OSS/BSS software that contains validation logic or
+   encodes the shape of an IPv4 gateway.  The sentinel looks exactly
+   like a valid gateway address to every existing system; the only place
+   that needs to know is the host.
 
-   The mechanism has been verified to work without changes to
-   applications or DHCPv4 configuration on Windows 11, macOS, Android,
-   iOS, Linux, FreeBSD, and ChromeOS.
+   Unmodified hosts, using the router's ARP response, have been verified
+   to work without changes to applications or DHCPv4 client
+   configuration on Windows 11, macOS, Android, iOS, Linux, FreeBSD, and
+   ChromeOS.
 
    This document addresses the host-side first-hop gap left open by
    [I-D.ietf-intarea-v4-via-v6], which defines router-to-router
@@ -154,18 +157,16 @@ Table of Contents
    BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all
    capitals, as shown here.
 
-3.  Problem Statement
+   IPV4-SENTINEL denotes the IPv4 address whose allocation is requested
+   in Section 7.
 
-   IPv4 next-hop resolution on a local link depends on ARP, which
-   requires an IPv4 subnet to be configured on the link.  In an
-   IPv6-only segment, no such subnet exists.  Existing solutions --
-   dual-stack, tunneling, and translation-based approaches such as NAT64
-   -- generally require changes beyond the local segment.  This document
-   closes the first-hop resolution gap for dual-stack hosts on IPv6-only
-   segments without requiring changes to host software, packet formats,
-   or DHCPv4 clients.
+   [RFC Editor: replace IPV4-SENTINEL with the address assigned by IANA
+   (TBD1) and remove this note.]
 
-4.  Host Behavior and Next-Hop Resolution
+   Examples and figures use 192.0.2.11, from the TEST-NET-1
+   documentation range [RFC5737].
+
+3.  Host Behavior and Next-Hop Resolution
 
    This mechanism activates only when a functional IPv6 implementation
    is present on the same interface, sufficient to perform Neighbor
@@ -174,13 +175,11 @@ Table of Contents
    host continues to behave as if no gateway were configured.
 
    For the outbound path, link-local IPv6 operation is sufficient.  For
-   return traffic to reach the host via the [I-D.ietf-intarea-v4-via-v6]
-   forwarding model, the first-hop router must advertise the host's /32
-   route with a routable IPv6 next-hop (GUA or ULA); a link-local
-   address is not valid as an inter-router next-hop.  Operators
-   deploying this mechanism in conjunction with
-   [I-D.ietf-intarea-v4-via-v6] MUST therefore ensure the host has a
-   routable IPv6 address on the interface.
+   return traffic, a link-local address is valid as a next hop only on
+   its own link.  A first-hop router therefore advertises a host's /32
+   either with itself as next hop, or with a routable IPv6 address of
+   the host (GUA or ULA), in which case the operator MUST ensure the
+   host has one.
 
    A host implementing this mechanism SHOULD be configured with a /32
    prefix length for its IPv4 address.  With a broader prefix, the host
@@ -189,7 +188,7 @@ Table of Contents
    ensures all IPv4 traffic is directed to the first-hop router via the
    sentinel, with no on-link ARP possible.
 
-   When a host is configured to use 192.0.0.11 as its IPv4 default
+   When a host is configured to use IPV4-SENTINEL as its IPv4 default
    gateway, the host's operating system MUST implement the following
    logic:
 
@@ -199,11 +198,11 @@ Table of Contents
        additional action specific to this mechanism is required at
        interface configuration time.
 
-   2.  When the next hop for an IPv4 packet is 192.0.0.11, the host MUST
-       NOT perform ARP.  Instead, it consults the IPv6 default router
-       list and neighbor cache for the link-layer address, scoped to the
-       interface on which 192.0.0.11 is configured as the IPv4 default
-       gateway.
+   2.  When the next hop for an IPv4 packet is IPV4-SENTINEL, the host
+       MUST NOT perform ARP.  Instead, it consults the IPv6 default
+       router list and neighbor cache for the link-layer address, scoped
+       to the interface on which IPV4-SENTINEL is configured as the IPv4
+       default gateway.
 
    3.  If the IPv6 default router link-layer address is in a usable NUD
        state (REACHABLE, STALE, DELAY, or PROBE per [RFC4861]), the IPv4
@@ -218,26 +217,29 @@ Table of Contents
        address.  For behavior prior to first RA reception, see the
        startup paragraph below.
 
-   Host stacks MUST treat 192.0.0.11 as a sentinel address signalling
+   Host stacks MUST treat IPV4-SENTINEL as a sentinel address signalling
    that IPv6-based next-hop resolution is to be used, regardless of
    other address configuration on the interface.  This behavior is
    unconditional and not dependent on any additional signaling.
 
-   When a DHCPv4 lease configuring 192.0.0.11 expires and is not
-   renewed, the host SHOULD remove 192.0.0.11 as the IPv4 default
+   When a DHCPv4 lease configuring IPV4-SENTINEL expires and is not
+   renewed, the host SHOULD remove IPV4-SENTINEL as the IPv4 default
    gateway and cease IPv6-based resolution on that interface.  For
    statically configured deployments, removal is governed by local
    administrative policy.
 
    Cross-interface resolution MUST NOT be performed.  On multi-homed
-   hosts, each interface independently resolves 192.0.0.11 against its
-   own IPv6 neighbor cache state.
+   hosts, each interface independently resolves IPV4-SENTINEL against
+   its own IPv6 neighbor cache state.  IPV4-SENTINEL is thus an
+   interface-scoped next-hop token, configured per interface by the
+   DHCPv4 Router Option, with source address selection following the
+   egress interface as for any other gateway.
 
    The following pseudocode defines the resolution logic:
 
-   on interface I (where 192.0.0.11 is the configured IPv4 gateway):
+   on interface I (where IPV4-SENTINEL is the configured IPv4 gateway):
 
-     if next-hop(pkt) == 192.0.0.11:
+     if next-hop(pkt) == IPV4-SENTINEL:
 
        routers = default_router_list(I)
 
@@ -286,18 +288,14 @@ Table of Contents
    packets SHOULD be dropped and an ICMPv4 Host Unreachable message MAY
    be generated toward the sending application.
 
-5.  Router Behavior
+4.  Router Behavior
 
-5.1.  End-to-End Packet Flow
+4.1.  End-to-End Packet Flow
 
    In this model, end hosts are assigned IPv4 addresses with a /32
    prefix length.  No IPv4 prefix is configured on the link; a sending
    host directs all IPv4 traffic to the first-hop router using the link-
-   layer address derived from the IPv6 neighbor cache.  A host cannot
-   resolve another host's IPv4 address on the local link without router
-   assistance; direct host-to-host IPv4 communication on the segment may
-   occur via ICMPv4 redirect ([RFC1122], Section 3.2.2.2) from the
-   gateway, but cannot be initiated by the host alone.
+   layer address derived from the IPv6 neighbor cache.
 
    For return traffic to reach end hosts, operators MUST ensure that
    host /32 routes with an IPv6 next-hop per [RFC8950] are present in
@@ -305,6 +303,11 @@ Table of Contents
    toward the correct first-hop without requiring IPv4 addresses on any
    router interface.  The mechanism by which the routing infrastructure
    learns these host routes is outside the scope of this document.
+
+   The first-hop router MUST maintain, for the lifetime of a host's
+   address assignment, the ability to deliver to that host's /32 without
+   depending on opportunistically learned neighbor cache state, so that
+   expiry of a cache entry cannot permanently break return traffic.
 
    The following diagram illustrates the end-to-end packet flow.
    Router-to-router forwarding uses [RFC8950]; no IPv4 address is
@@ -314,7 +317,8 @@ Table of Contents
 
    Host A                      Router R1
    IPv4: 198.51.100.1/32       (no IPv4 address configured)
-   IPv6: 2001:db8:1::1         IPv6 link-local: fe80::R1
+   IPv4 gw: 192.0.2.11         IPv6 link-local: fe80::R1
+   IPv6: 2001:db8:1::1
 
      [1] IPv4 pkt (src: 198.51.100.1, dst: 203.0.113.5)
          L2 dst: MAC(R1) -- resolved from ND cache, no ARP
@@ -339,11 +343,11 @@ Table of Contents
 
    No ARP is exchanged at any point.
 
-5.2.  Router Ingress Behavior
+4.2.  Router Ingress Behavior
 
-   Routers MUST treat 192.0.0.11 as an interface-scoped address, valid
-   only on the interface on which it is configured, and only for
-   locally-terminated traffic. 192.0.0.11 does not appear in IPv4
+   Routers MUST treat IPV4-SENTINEL as an interface-scoped address,
+   valid only on the interface on which it is configured, and only for
+   locally-terminated traffic.  IPV4-SENTINEL does not appear in IPv4
    fragment headers; fragmentation behavior is unchanged by this
    mechanism.  Specifically:
 
@@ -354,26 +358,27 @@ Table of Contents
    *  It MUST NOT appear as source or destination in any forwarded
       packet.
 
-   A router MAY respond to ICMPv4 echo requests addressed to 192.0.0.11
-   and MAY generate ICMPv4 Time Exceeded messages using 192.0.0.11 as
-   the source address.  All such messages are interface-local.
+   A router MAY respond to ICMPv4 echo requests addressed to
+   IPV4-SENTINEL and MAY generate ICMPv4 Time Exceeded messages using
+   IPV4-SENTINEL as the source address.  All such messages are
+   interface-local.
 
    ICMPv4 error generation on IPv6-only transit routers is out of scope;
    see [RFC7600].
 
-5.3.  Backward Compatibility: Router ARP Response
+4.3.  Backward Compatibility: Router ARP Response
 
-   The use of 192.0.0.11 as the DHCPv4 Router Option (Option 3) value is
-   fully conformant with [RFC2132], which imposes no requirement that
+   The use of IPV4-SENTINEL as the DHCPv4 Router Option (Option 3) value
+   is fully conformant with [RFC2132], which imposes no requirement that
    the router address be reachable via ARP on the same subnet.  Unlike
    [RFC1027] (proxy ARP), the router is not proxying for a remote host;
    it owns this address on the interface for the purpose of link-layer
    reachability.
 
-   Unmodified hosts receiving 192.0.0.11 as their IPv4 default gateway
-   will issue an ARP request for it.  A router SHOULD respond to such
-   ARP requests with its own MAC address.  This is not proxy ARP: no
-   subnet exists, no remote host is being proxied.
+   Unmodified hosts receiving IPV4-SENTINEL as their IPv4 default
+   gateway will issue an ARP request for it.  A router MAY respond to
+   such ARP requests with its own MAC address.  This is not proxy ARP:
+   no subnet exists, no remote host is being proxied.
 
    This enables a two-tier deployment model on the same L2 segment:
 
@@ -384,16 +389,21 @@ Table of Contents
       cache; ARP eliminated entirely.
 
    Both tiers interoperate, allowing incremental deployment.  The router
-   requires no per-host state to support both tiers simultaneously:
-   updated hosts will not send ARP requests for 192.0.0.11, so the
-   router's ARP response behavior is triggered only by unmodified hosts.
+   requires no additional per-host state to support both tiers
+   simultaneously: updated hosts will not send ARP requests for
+   IPV4-SENTINEL, so the router's ARP response behavior is triggered
+   only by unmodified hosts.
 
-6.  Deployment Considerations
+   This ARP response exists for the migration period: an operator
+   enables it while unmodified hosts remain on the segment and disables
+   it thereafter, leaving the segment free of ARP.
 
-   This mechanism applies granularly at the segment level.  A network
-   may contain a mix of IPv4-only, dual-stack, and IPv6-only segments;
-   this mechanism is applicable specifically to IPv6-only segments
-   carrying dual-stack hosts and does not affect other segment types.
+5.  Deployment Considerations
+
+   This mechanism applies at the segment level.  A network may contain a
+   mix of IPv4-only, dual-stack, and IPv6-only segments; this mechanism
+   is applicable specifically to IPv6-only segments carrying dual-stack
+   hosts and does not affect other segment types.
 
    This mechanism complements [RFC8925] (IPv6-Only Preferred Option).
    RFC 8925 allows hosts to signal a preference for IPv6-only operation,
@@ -402,7 +412,7 @@ Table of Contents
    connectivity on an IPv6-only segment, without requiring a dual-stack
    infrastructure or an IPv4 subnet on the local link.  A host that
    receives Option 108 and transitions to IPv6-only operation retains
-   functional IPv4 connectivity via 192.0.0.11 without any additional
+   functional IPv4 connectivity via IPV4-SENTINEL without any additional
    configuration.
 
    This mechanism fits within the IPv6-mostly network deployment model
@@ -410,36 +420,39 @@ Table of Contents
    native IPv4 connectivity is provided to dual-stack hosts on an
    IPv6-only segment.
 
-   CLAT [I-D.ietf-v6ops-claton] provides an alternative approach to IPv4
-   connectivity via translation.  CLAT notes that a CLAT function SHOULD
-   be disabled when native IPv4 connectivity is available; this
-   mechanism provides exactly that native connectivity, making CLAT
-   unnecessary on segments where it is deployed.
+   CLAT [I-D.ietf-v6ops-claton] provides outbound IPv4 through a shared
+   translator pool, whereas this mechanism gives a host its own IPv4
+   address; they meet different needs.  CLAT notes that a CLAT function
+   SHOULD be disabled when native IPv4 connectivity is available, which
+   this mechanism provides.
 
    Hosts without a functional IPv6 implementation on the relevant
    interface cannot perform Neighbor Discovery and are outside the scope
    of this document.
 
+   The mechanism inherits ND's operational prerequisites: icmp6
+   permitted on host firewalls, functioning MLD snooping and multicast
+   forwarding, no MAC filtering of solicited-node groups.  These are
+   already prerequisites for IPv6 service.
+
    On segments with multiple routers advertising equal Default Router
    Preference (common in datacenter ECMP fabrics), hosts may make
    inconsistent router selections based on RA timing.  Operators SHOULD
    configure explicit Default Router Preference values per [RFC4191] to
-   ensure deterministic behavior.
-
-   Implementations in which IPv4 and IPv6 stacks are managed by separate
-   processes (as is common on mobile operating systems) will require
-   inter-process communication to expose the IPv6 neighbor cache to the
-   IPv4 forwarding path.  This is an implementation consideration and
-   does not affect the on-wire behavior defined in this document.
+   ensure deterministic behavior.  Every router advertising itself as an
+   IPv6 default router on the segment can be selected as the IPv4 first
+   hop, so it MUST forward IPv4 and have a return path per [RFC8950]; a
+   lower preference does not remove a router from selection.
 
    DHCPv4 relay agents that enforce on-link gateway validation may
-   reject or flag 192.0.0.11 as an invalid router option.  Operators
+   reject or flag IPV4-SENTINEL as an invalid router option.  Operators
    SHOULD verify relay agent behavior in their deployment before relying
-   on this mechanism.
+   on this mechanism.  A relaying interface needs no IPv4 address, but
+   giaddr must be a routable IPv4 address, for which one loopback per
+   relay router suffices; [RFC3527] link selection decouples giaddr from
+   pool selection where needed.
 
-7.  Security Considerations
-
-7.1.  ARP Attack Surface Reduction
+6.  Security Considerations
 
    In the updated-host deployment model, ARP is eliminated from the
    segment entirely.  In the unmodified-host model, ARP is constrained
@@ -455,70 +468,40 @@ Table of Contents
    with RA Guard [RFC6105].  Subnet scanning is mitigated since hosts
    carry /32 addresses only.
 
-   A host receiving 192.0.0.11 as its IPv4 default gateway on a network
-   that does not implement this mechanism will issue an ARP request that
-   receives no response, causing IPv4 connectivity to fail silently.
-   Operators SHOULD ensure 192.0.0.11 is only offered via DHCPv4 on
-   segments where the mechanism is deployed.  DHCPv4 snooping and
-   dynamic ARP inspection, where used, MUST be configured to permit ARP
-   responses for 192.0.0.11 from the first-hop router.
+   IPV4-SENTINEL carries no topology information, so poisoning its ARP
+   entry only redirects local-segment traffic; dynamic ARP inspection
+   mitigates this.
+
+   As IPV4-SENTINEL MUST NOT appear as source or destination in any
+   forwarded packet per Section 4.2, conformant deployments render it
+   unreachable from off-link and unusable as a spoofed source address
+   beyond the segment.
+
+   A host receiving IPV4-SENTINEL as its IPv4 default gateway on a
+   network that does not implement this mechanism will issue an ARP
+   request that receives no response, causing IPv4 connectivity to fail
+   silently.  Operators SHOULD ensure IPV4-SENTINEL is only offered via
+   DHCPv4 on segments where the mechanism is deployed.  DHCPv4 snooping
+   and dynamic ARP inspection, where used, MUST be configured to permit
+   ARP responses for IPV4-SENTINEL from the first-hop router.
 
    This mechanism does not interact with IPv4 link-local address
-   configuration per [RFC3927].  A host configured with 192.0.0.11 as
+   configuration per [RFC3927].  A host configured with IPV4-SENTINEL as
    its gateway and a link-local IPv4 source address will follow the same
-   resolution logic defined in Section 4 (Host Behavior and Next-Hop
-   Resolution).
+   resolution logic defined in Section 3.
 
-7.2.  Universal Gateway Address
+7.  IANA Considerations
 
-   A consequence of the IANA allocation and the ARP behavior defined in
-   Section 5.3 is that 192.0.0.11 can serve as a topology-independent
-   gateway address in any deployment where routers respond to ARP for
-   it, not limited to IPv6-only segments.  This document does not
-   specify or require this behavior in IPv4-only deployments; it is an
-   emergent property of the allocation.
-
-   In segments where routers respond to ARP for 192.0.0.11, it functions
-   as a universal gateway address.  Unlike a conventional per-subnet
-   gateway address, it does not reveal network topology and carries no
-   subnet membership information.  ARP cache poisoning of 192.0.0.11 is
-   less valuable than poisoning a conventional gateway address, as it
-   carries no topological information for an attacker to exploit; it can
-   only redirect local-segment traffic, mitigated by dynamic ARP
-   inspection.  Rogue RA attacks achieve the same redirection and are
-   mitigated by RA Guard [RFC6105].
-
-   As 192.0.0.11 MUST NOT appear as source or destination in any
-   forwarded packet per Section 5.2, conformant deployments render it
-   unreachable from any device not on the local segment.  This
-   eliminates it as a target for off-link attacks.  As Source=False in
-   the IANA registry (see IANA Considerations), no conformant off-link
-   device will originate packets with 192.0.0.11 as source, precluding
-   volumetric attacks using this address.
-
-   IPv6 has long used specific link-local addresses (fe80::) as next-hop
-   addresses, topology-independent identifiers that work on any segment
-   without carrying subnet membership information. 192.0.0.11 provides
-   the same property for IPv4.
-
-8.  Implementation Requirements
-
-   An implementation is conformant if it satisfies all MUST and MUST NOT
-   requirements in Sections 4 and 5.
-
-   A reference implementation in Linux userspace is available at
-   https://github.com/remcovanmook/v4-with-v6-nh.  A full conformance
-   test suite will be documented prior to IETF Last Call.
-
-9.  IANA Considerations
-
-   This document requests that IANA assign 192.0.0.11/32 in the "IANA
-   IPv4 Special-Purpose Address Registry" [RFC6890] as follows:
+   This document requests that IANA assign a single IPv4 address from
+   the 192.0.0.0/24 IETF Protocol Assignments block in the "IANA IPv4
+   Special-Purpose Address Registry" [RFC6890].  The address
+   192.0.0.11/32 is suggested.  The registry's current contents are
+   maintained by IANA at [IANA-IPV4-SPECIAL].
 
         +======================+==================================+
         | Field                | Value                            |
         +======================+==================================+
-        | Address Block        | 192.0.0.11/32                    |
+        | Address Block        | TBD1 (suggested: 192.0.0.11/32)  |
         +----------------------+----------------------------------+
         | Name                 | IPv4 Gateway via IPv6 Resolution |
         +----------------------+----------------------------------+
@@ -541,15 +524,14 @@ Table of Contents
 
                                   Table 1
 
-   The Destination=True designation reflects that 192.0.0.11 may appear
-   as a destination in ICMPv4 messages received by the router on a local
-   interface (see Section 5.2).  It does not imply global reachability;
-   Forwardable=False and Globally Reachable=False together preclude any
-   use of this address beyond the local link.
+   Source=True and Destination=True reflect that a first-hop router
+   originates and receives interface-local ICMPv4 messages using this
+   address (see Section 4.2).  Forwardable=False and Globally
+   Reachable=False preclude any use beyond the local link.
 
-10.  References
+8.  References
 
-10.1.  Normative References
+8.1.  Normative References
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
@@ -580,7 +562,7 @@ Table of Contents
               DOI 10.17487/RFC8950, November 2020,
               <https://www.rfc-editor.org/rfc/rfc8950>.
 
-10.2.  Informative References
+8.2.  Informative References
 
    [I-D.ietf-intarea-v4-via-v6]
               Chroboczek, J., Kumari, W., and T. Høiland-Jørgensen,
@@ -592,9 +574,9 @@ Table of Contents
    [I-D.ietf-v6ops-6mops]
               Buraglio, N., Caletka, O., and J. Linkova, "IPv6-mostly
               Networks: Deployment and Operations Considerations", Work
-              in Progress, Internet-Draft, draft-ietf-v6ops-6mops-09, 12
-              August 2026, <https://datatracker.ietf.org/doc/html/draft-
-              ietf-v6ops-6mops-09>.
+              in Progress, Internet-Draft, draft-ietf-v6ops-6mops-12, 29
+              October 2026, <https://datatracker.ietf.org/doc/html/
+              draft-ietf-v6ops-6mops-12>.
 
    [I-D.ietf-v6ops-claton]
               Colitti, L., Linkova, J., and T. Jensen, "464XLAT
@@ -604,19 +586,24 @@ Table of Contents
               <https://datatracker.ietf.org/doc/html/draft-ietf-v6ops-
               claton-16>.
 
+   [IANA-IPV4-SPECIAL]
+              IANA, "IPv4 Special-Purpose Address Registry", n.d.,
+              <https://www.iana.org/assignments/iana-ipv4-special-
+              registry/>.
+
    [RFC1027]  Carl-Mitchell, S. and J. Quarterman, "Using ARP to
               implement transparent subnet gateways", RFC 1027,
               DOI 10.17487/RFC1027, October 1987,
               <https://www.rfc-editor.org/rfc/rfc1027>.
 
-   [RFC1122]  Braden, R., Ed., "Requirements for Internet Hosts -
-              Communication Layers", STD 3, RFC 1122,
-              DOI 10.17487/RFC1122, October 1989,
-              <https://www.rfc-editor.org/rfc/rfc1122>.
-
    [RFC2132]  Alexander, S. and R. Droms, "DHCP Options and BOOTP Vendor
               Extensions", RFC 2132, DOI 10.17487/RFC2132, March 1997,
               <https://www.rfc-editor.org/rfc/rfc2132>.
+
+   [RFC3527]  Kinnear, K., Stapp, M., Johnson, R., and J. Kumarasamy,
+              "Link Selection sub-option for the Relay Agent Information
+              Option for DHCPv4", RFC 3527, DOI 10.17487/RFC3527, April
+              2003, <https://www.rfc-editor.org/rfc/rfc3527>.
 
    [RFC3927]  Cheshire, S., Aboba, B., and E. Guttman, "Dynamic
               Configuration of IPv4 Link-Local Addresses", RFC 3927,
@@ -638,21 +625,65 @@ Table of Contents
               Stateless Solution (4rd)", RFC 7600, DOI 10.17487/RFC7600,
               July 2015, <https://www.rfc-editor.org/rfc/rfc7600>.
 
+   [RFC7942]  Sheffer, Y. and A. Farrel, "Improving Awareness of Running
+              Code: The Implementation Status Section", BCP 205,
+              RFC 7942, DOI 10.17487/RFC7942, July 2016,
+              <https://www.rfc-editor.org/rfc/rfc7942>.
+
    [RFC8925]  Colitti, L., Linkova, J., Richardson, M., and T.
               Mrugalski, "IPv6-Only Preferred Option for DHCPv4",
               RFC 8925, DOI 10.17487/RFC8925, October 2020,
               <https://www.rfc-editor.org/rfc/rfc8925>.
 
-Appendix A.  Acknowledgements
+Appendix A.  Implementation Status
 
-   The author thanks Tobias Fiebig, Warren Kumari, Jen Linkova, David
-   Lamparter, and Jordi Palet Martinez for their feedback and review.
-   An earlier version of this work was presented as a lightning talk at
-   RIPE 91 in Bucharest (October 2025) and at IETF 124 in Montreal
-   (November 2025).
+   [RFC Editor: remove this section and the reference to [RFC7942]
+   before publication.]
 
-Author's Address
+   This section records implementation status per [RFC7942].  Reference
+   implementations by one of the authors are available at
+   https://github.com/remcovanmook/v4-with-v6-nh.  They use 192.0.0.11
+   as a provisional value for IPV4-SENTINEL.
+
+   Host implementations:
+
+   *  *Linux:* v4gwd, a user-space daemon, and a systemd-networkd patch
+      that is not upstream.
+
+   *  *FreeBSD:* a daemon using the kernel's support for IPv4 routes
+      with IPv6 next hops.
+
+   *  *macOS and Windows:* daemons that pin IPV4-SENTINEL in a static
+      neighbor entry to the IPv6 default router's link-layer address.
+      They follow a single router, and macOS sends transient ARP at boot
+      before the daemon starts.
+
+   None is fully conformant with Section 3.  Implementations outside the
+   kernel cannot queue packets pending the first RA, and apply sentinel
+   handling only while running or, for networkd, when enabled.
+   Conformance needs native support in the host stack.
+
+   Router implementations: Debian configurations for a single router, an
+   active/active pair and a centrally orchestrated fabric, run on live
+   testbeds; and example configurations for IOS XR, Junos, SR OS, EOS
+   and RouterOS, not yet tested on hardware.
+
+   The repository maps the requirements of an earlier version of this
+   document to the code, with lab tests for connectivity, the absence of
+   ARP, and withdrawal on lease expiry.
+
+Appendix B.  Acknowledgements
+
+   The authors thank Warren Kumari, Jen Linkova, David Lamparter, and
+   Jordi Palet Martinez for their feedback and review.
+
+Authors' Addresses
 
    Remco van Mook
    Asteroid International B.V.
    Email: remco@asteroidhq.com
+
+
+   Tobias Fiebig
+   TU Wien
+   Email: tobias@fiebig.at
