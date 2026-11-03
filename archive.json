@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-09-24T02:03:10.199345+00:00",
+  "timestamp": "2026-11-03T04:27:35.776168+00:00",
   "repo": "remcovanmook/draft-ipv6-resolved-gateway",
   "labels": [
     {
@@ -114,7 +114,7 @@
       "id": "I_kwDOPzmSBc8AAAABLPixtg",
       "title": "Section 5: router-to-host binding durability requirement (one paragraph)",
       "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/3",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "remcovanmook",
       "authorAssociation": "OWNER",
       "assignees": [],
@@ -124,8 +124,8 @@
       ],
       "body": "Add a single normative requirement: the first-hop router MUST maintain, for the lease lifetime, the ability to deliver to each /32 without depending on opportunistic neighbour-cache state. This prohibits the failure mode where an opportunistically learned MAC-to-IPv6 mapping is garbage collected and connectivity never recovers. Mechanisms stay out of this document (see companion draft issue). Raised in post-session design discussion.",
       "createdAt": "2026-08-03T11:51:29Z",
-      "updatedAt": "2026-08-03T11:51:29Z",
-      "closedAt": null,
+      "updatedAt": "2026-11-02T14:22:16Z",
+      "closedAt": "2026-11-02T14:22:16Z",
       "comments": []
     },
     {
@@ -133,7 +133,7 @@
       "id": "I_kwDOPzmSBc8AAAABLPiyTw",
       "title": "Section 5.3: ARP responder is operator-controlled migration machinery",
       "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/4",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "remcovanmook",
       "authorAssociation": "OWNER",
       "assignees": [],
@@ -143,8 +143,8 @@
       ],
       "body": "State explicitly that the router ARP responder exists for the migration period: enabled while unmodified hosts remain on the segment, disabled by the operator thereafter. A fully migrated segment is genuinely zero-ARP, responder included. Related design position: Section 4's MUST NOT stays strict; no host-side ARP fallback (a sanctioned fallback would make the responder unretirable from any segment, foreclosing the zero-ARP end state).",
       "createdAt": "2026-08-03T11:51:30Z",
-      "updatedAt": "2026-08-03T11:51:30Z",
-      "closedAt": null,
+      "updatedAt": "2026-11-02T14:22:16Z",
+      "closedAt": "2026-11-02T14:22:16Z",
       "comments": []
     },
     {
@@ -152,7 +152,7 @@
       "id": "I_kwDOPzmSBc8AAAABLPiy1A",
       "title": "Section 4: multi-homing exposition",
       "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/5",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "remcovanmook",
       "authorAssociation": "OWNER",
       "assignees": [],
@@ -161,8 +161,8 @@
       ],
       "body": "Adoption-call review (H. Robinson) showed the semantics are right but the exposition is poor. Explain the sentinel as an interface-scoped next-hop token; show the (prefix, interface, via-sentinel) route form; note that DHCPv4 already expresses this on both sides (per-interface Option 3 default plus Option 121 classless routes), demonstrated in the implementations repo; source selection follows the egress interface as today. Robinson's algorithm walkthrough in the call thread is raw material.",
       "createdAt": "2026-08-03T11:51:32Z",
-      "updatedAt": "2026-08-03T11:51:32Z",
-      "closedAt": null,
+      "updatedAt": "2026-11-02T14:22:17Z",
+      "closedAt": "2026-11-02T14:22:17Z",
       "comments": []
     },
     {
@@ -170,7 +170,7 @@
       "id": "I_kwDOPzmSBc8AAAABLPizhw",
       "title": "Section 5: scope the ICMP redirect mention",
       "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/6",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "remcovanmook",
       "authorAssociation": "OWNER",
       "assignees": [],
@@ -179,8 +179,8 @@
       ],
       "body": "Redirects cannot express (destination, interface, sentinel) on multi-homed hosts, are operationally moribund, and are not needed: multi-router steering lives in RA preferences (RFC 4191). Rescope or remove the existing redirect sentence; state that redirects are not relied upon.",
       "createdAt": "2026-08-03T11:51:33Z",
-      "updatedAt": "2026-08-03T11:51:33Z",
-      "closedAt": null,
+      "updatedAt": "2026-11-02T14:22:17Z",
+      "closedAt": "2026-11-02T14:22:17Z",
       "comments": []
     },
     {
@@ -245,7 +245,7 @@
       "id": "I_kwDOPzmSBc8AAAABLPi2Bw",
       "title": "Introduction: add no-flag-day sentence",
       "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/10",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "remcovanmook",
       "authorAssociation": "OWNER",
       "assignees": [],
@@ -255,16 +255,24 @@
       ],
       "body": "Add: 'There is no flag day or mandatory switch-over point.' to close the incremental deployment argument.",
       "createdAt": "2026-08-03T11:51:38Z",
-      "updatedAt": "2026-08-03T11:51:38Z",
-      "closedAt": null,
-      "comments": []
+      "updatedAt": "2026-11-02T14:22:18Z",
+      "closedAt": "2026-11-02T14:22:18Z",
+      "comments": [
+        {
+          "author": "remcovanmook",
+          "authorAssociation": "OWNER",
+          "body": "in.",
+          "createdAt": "2026-11-02T12:58:20Z",
+          "updatedAt": "2026-11-02T12:58:20Z"
+        }
+      ]
     },
     {
       "number": 11,
       "id": "I_kwDOPzmSBc8AAAABLPi2kw",
       "title": "Introduction: OSS/BSS ecosystem argument for the sentinel",
       "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/11",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "remcovanmook",
       "authorAssociation": "OWNER",
       "assignees": [],
@@ -274,9 +282,17 @@
       ],
       "body": "A new DHCPv4 option requires changes across billing, provisioning, monitoring, NOC tooling and validation logic that encode the shape of an IPv4 gateway. The sentinel looks exactly like a valid gateway address to every existing system; the only place that needs to know is the host. Add to the alternatives discussion in the Introduction.",
       "createdAt": "2026-08-03T11:51:39Z",
-      "updatedAt": "2026-08-03T11:51:39Z",
-      "closedAt": null,
-      "comments": []
+      "updatedAt": "2026-11-02T14:22:18Z",
+      "closedAt": "2026-11-02T14:22:18Z",
+      "comments": [
+        {
+          "author": "remcovanmook",
+          "authorAssociation": "OWNER",
+          "body": "in.",
+          "createdAt": "2026-11-02T13:02:00Z",
+          "updatedAt": "2026-11-02T13:02:00Z"
+        }
+      ]
     },
     {
       "number": 12,
@@ -293,16 +309,24 @@
       ],
       "body": "Rework the Introduction around: (1) the internet-v4 vs local-network-v4 distinction (demand is off-link, architecture is on-link); (2) the dependency stack: subnet -> ARP -> FHRP -> carved pools -> IPv4 host, with the policing apparatus as side-stratum; (3) the demolition: /32 IS subnet deletion (what Hetzner/OVH/Scaleway did), sentinel deletes ARP's last job, FHRP loses its object, pools flatten; (4) precedents: RFC 3021 /31 lineage, VPN /32s (every OS runs subnet-less IPv4 on tunnel interfaces daily), 1982-isolation-assumption history (ARP designed alone on the wire, never revisited when IPv6 arrived). Segment tiering: access/hosting (no lateral v4), enterprise (auditable lateral v4, enclave-able), home WiFi (unauditable, out of scope). Candidate figure: before/after layer cake. See the published RIPE Labs articles for the worked prose.",
       "createdAt": "2026-08-03T11:51:41Z",
-      "updatedAt": "2026-08-03T11:51:41Z",
+      "updatedAt": "2026-11-02T13:03:07Z",
       "closedAt": null,
-      "comments": []
+      "comments": [
+        {
+          "author": "remcovanmook",
+          "authorAssociation": "OWNER",
+          "body": "I think we need less text rather than more. The reasoning is valid, the question is how much of it we need.",
+          "createdAt": "2026-11-02T13:03:06Z",
+          "updatedAt": "2026-11-02T13:03:06Z"
+        }
+      ]
     },
     {
       "number": 13,
       "id": "I_kwDOPzmSBc8AAAABLPi3xw",
       "title": "DC: ND operational-health prerequisites",
       "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/13",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "remcovanmook",
       "authorAssociation": "OWNER",
       "assignees": [],
@@ -312,16 +336,24 @@
       ],
       "body": "The mechanism inherits ND's operational prerequisites: icmp6 permitted on host firewalls, functioning MLD snooping / multicast forwarding, no MAC filtering of solicited-node groups. Already prerequisites for IPv6 service on the segment; state them explicitly. From list review.",
       "createdAt": "2026-08-03T11:51:42Z",
-      "updatedAt": "2026-08-03T11:51:42Z",
-      "closedAt": null,
-      "comments": []
+      "updatedAt": "2026-11-02T14:22:19Z",
+      "closedAt": "2026-11-02T14:22:19Z",
+      "comments": [
+        {
+          "author": "remcovanmook",
+          "authorAssociation": "OWNER",
+          "body": "in.",
+          "createdAt": "2026-11-02T13:07:05Z",
+          "updatedAt": "2026-11-02T13:07:05Z"
+        }
+      ]
     },
     {
       "number": 14,
       "id": "I_kwDOPzmSBc8AAAABLPi41w",
       "title": "DC: east-west hairpinning cost and topology dependence",
       "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/14",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "remcovanmook",
       "authorAssociation": "OWNER",
       "assignees": [],
@@ -331,9 +363,17 @@
       ],
       "body": "The /32 model prices intra-segment IPv4 as a routed service. Cost is topology-dependent: on an L3 access switch the hairpinned path crosses the identical links as the switched path (zero extra wire cost, line rate); the double-traffic case is router-on-a-stick behind shared L2. Guidance: lead segments round to zero (lateral suppressed/absent or L3 access); genuinely east-west-heavy legacy shared-L2 segments should not opt in -- stay dual-stack or move that traffic to IPv6 first. From article review (A. Prado) with topology refinement from the adoption-call thread.",
       "createdAt": "2026-08-03T11:51:43Z",
-      "updatedAt": "2026-08-03T11:51:43Z",
-      "closedAt": null,
-      "comments": []
+      "updatedAt": "2026-11-02T14:22:19Z",
+      "closedAt": "2026-11-02T14:22:19Z",
+      "comments": [
+        {
+          "author": "remcovanmook",
+          "authorAssociation": "OWNER",
+          "body": "valid but doesn't add to the draft. Left out.",
+          "createdAt": "2026-11-02T13:11:49Z",
+          "updatedAt": "2026-11-02T13:11:49Z"
+        }
+      ]
     },
     {
       "number": 15,
@@ -350,16 +390,24 @@
       ],
       "body": "These features were written against subnet-and-binding assumptions; behaviour with an off-subnet gateway and /32 leases must be validated per platform. Textbook analysis: first-hop router sits on a DAI-trusted port, so the sentinel reply passes unchanged; host ARP requests validate against the sender binding (which the /32 lease provides); IPSG sees the leased address. Cover the residue: routers on untrusted ports, vendor variance on target/gratuitous-ARP inspection, bindings machinery beyond the classic trio. One static universal permit where needed. End state: apparatus unnecessary for IPv4 once the ARP tier is off. From article review (A. Prado).",
       "createdAt": "2026-08-03T11:51:45Z",
-      "updatedAt": "2026-08-03T11:51:45Z",
+      "updatedAt": "2026-11-02T13:20:22Z",
       "closedAt": null,
-      "comments": []
+      "comments": [
+        {
+          "author": "remcovanmook",
+          "authorAssociation": "OWNER",
+          "body": "Maybe in the security considerations?",
+          "createdAt": "2026-11-02T13:20:22Z",
+          "updatedAt": "2026-11-02T13:20:22Z"
+        }
+      ]
     },
     {
       "number": 16,
       "id": "I_kwDOPzmSBc8AAAABLPi6Lw",
       "title": "DC: new subsection 'Multiple gateways and redundancy'",
       "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/16",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "remcovanmook",
       "authorAssociation": "OWNER",
       "assignees": [],
@@ -369,8 +417,8 @@
       ],
       "body": "The sentinel behaves anycast-like where it counts (not anycast in the technical sense): resolved from the neighbour cache, never ARP-elected, so any number of routers can hold it with zero coordination; the requirement reduces to distinct IPv6 identities. Precision: this holds for the updated tier; unmodified hosts ARP and multiple routers answer last-reply-wins (benign nondeterminism; conventional FHRP remains available for the ARP tier where determinism is wanted). Every selectable router MUST forward IPv4 with an 8950 return path; steer via RFC 4191 where not all qualify. ECMP corollary: with correct route propagation every router originates each host /32, so return traffic is active-active by standard routing machinery; two independent healing planes (downstream at IGP convergence, upstream at RA/NUD pace). Caveat: stateful functions on segment routers inherit standard ECMP-asymmetry considerations. Explicit failover-MAC sentence: updated hosts elect nothing; unmodified hosts either accept re-ARP timing or run VRRP in front of the ARP tier. FHRP consumer taxonomy available for rationale: gateways and floating service VIPs are both 'an address that must appear on-link while its owner may change'; the /32 model moves the second to route origination (conditional origination from the active member for stateful pairs).",
       "createdAt": "2026-08-03T11:51:46Z",
-      "updatedAt": "2026-08-03T11:51:46Z",
-      "closedAt": null,
+      "updatedAt": "2026-11-02T14:22:20Z",
+      "closedAt": "2026-11-02T14:22:20Z",
       "comments": []
     },
     {
@@ -416,7 +464,7 @@
       "id": "I_kwDOPzmSBc8AAAABLPi7uQ",
       "title": "DC: reword the CLAT paragraph",
       "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/19",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "remcovanmook",
       "authorAssociation": "OWNER",
       "assignees": [],
@@ -426,8 +474,8 @@
       ],
       "body": "Make the demand-profile distinction explicit: CLAT provides outbound IPv4 via a shared PLAT pool (address sharing is the point); this mechanism provides a per-host routable IPv4 endpoint identity (per-host address is the point); not alternatives for the same host. Keep the claton interaction (CLAT disables when native IPv4 is available; the sentinel provides that trigger via ordinary DHCPv4). Drop or scope 'making CLAT unnecessary'. Optionally note the /32 need not be public: RFC 1918 /32s with edge NAT work unchanged on client segments. From list review.",
       "createdAt": "2026-08-03T11:51:49Z",
-      "updatedAt": "2026-08-03T11:51:49Z",
-      "closedAt": null,
+      "updatedAt": "2026-11-02T14:22:20Z",
+      "closedAt": "2026-11-02T14:22:20Z",
       "comments": []
     },
     {
@@ -454,7 +502,7 @@
       "id": "I_kwDOPzmSBc8AAAABLPi8ww",
       "title": "DC: DHCPv4 relay note",
       "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/issues/21",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "remcovanmook",
       "authorAssociation": "OWNER",
       "assignees": [],
@@ -464,8 +512,8 @@
       ],
       "body": "Relaying interface needs no IPv4 address; giaddr requires a routable IPv4 address (one loopback per relay router suffices); RFC 3527 link-selection decouples giaddr from pool selection where needed; flat /32 pools largely dissolve pool selection (Option 82 circuit-id where segment identity is wanted). Cross-reference 192.0.0.8/32 (RFC 7600) for transit ICMPv4 sourcing alongside the 5.2 on-link sourcing. From article review.",
       "createdAt": "2026-08-03T11:51:52Z",
-      "updatedAt": "2026-08-03T11:51:52Z",
-      "closedAt": null,
+      "updatedAt": "2026-11-02T14:22:21Z",
+      "closedAt": "2026-11-02T14:22:21Z",
       "comments": []
     },
     {
@@ -1085,6 +1133,231 @@
           "createdAt": "2026-09-23T15:15:38Z",
           "updatedAt": "2026-09-23T15:15:38Z",
           "comments": []
+        }
+      ]
+    },
+    {
+      "number": 43,
+      "id": "PR_kwDOPzmSBc8AAAABMUDgLw",
+      "title": "Prepare -01: add co-author, vet open issues, update implementation status",
+      "url": "https://github.com/remcovanmook/draft-ipv6-resolved-gateway/pull/43",
+      "state": "MERGED",
+      "author": "remcovanmook",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "Tobias, this is the text proposed for -01, for your review. The I-D cutoff is **today, 2 November, at 23:59 UTC**.\n\nThe commit is one large diff, so these are the changes that most need your judgment.\n\n## Normative changes\n- **Router ARP response (#4):** now SHOULD where unmodified hosts may be on the segment, and MAY be omitted otherwise. A non-normative note describes it as migration machinery that an operator can disable once unmodified hosts are gone. This follows the review; the first commit message still says SHOULD becomes MAY, which the later commit supersedes.\n- **Return delivery (#3):** new MUST. The first-hop router keeps the ability to deliver to each /32 without relying on opportunistically learned neighbor state.\n- **Selectable routers (#16):** new MUST. Every router advertising itself as an IPv6 default router must forward IPv4 and have a return path. A lower RFC 4191 preference doesn't remove a router from selection, so an IPv6-only router on the segment would have to advertise lifetime 0. If this is too strict, soften this sentence.\n- **Routable host address:** the MUST now applies only where the route uses the host's address as next hop. The old text said a link-local address is invalid between routers, which contradicted the packet flow figure, RFC 8950 and the v4-via-v6 draft.\n\n## Other text\n- **Multihoming (#5):** one sentence describing the sentinel as an interface-scoped next-hop token. It leaves out Option 121: the systemd-networkd patch doesn't engage when a default is sent that way, and `v4gwd` only handles the default route.\n- **CLAT (#19):** reworded as meeting different needs, and \"making CLAT unnecessary\" is gone.\n- **DHCPv4 relay (#21):** one sentence on giaddr and RFC 3527.\n- **Smaller items:** #6, #10, #11 and #13.\n- **Removed:** Problem Statement (folded into the Introduction), Universal Gateway Address and Implementation Requirements.\n\n## Please check\n- **Implementation Status:** it says plainly that no implementation is fully conformant. Its validation claims come from the repo's READMEs and commit messages; the tests weren't rerun for this PR. It lists only implementations in that repo, so tell us if you know of others.\n- **Platform claim in the Introduction:** it now says unmodified hosts, using the router's ARP response, were verified on the listed platforms.\n- **Your author entry:** name, affiliation and email.\n\nThis PR doesn't auto-close any issues. They'll be closed by hand after merge.\n\n",
+      "createdAt": "2026-11-02T13:42:59Z",
+      "updatedAt": "2026-11-02T14:17:59Z",
+      "baseRepository": "remcovanmook/draft-ipv6-resolved-gateway",
+      "baseRefName": "main",
+      "baseRefOid": "bd0b921e6ac1ca8749589f54c7e60bd7d251a18a",
+      "headRepository": "remcovanmook/draft-ipv6-resolved-gateway",
+      "headRefName": "wg-01/issue-triage",
+      "headRefOid": "9bc677e5f1f1afdac0a418d491bb77cf895eedd5",
+      "closedAt": "2026-11-02T14:17:58Z",
+      "mergedAt": "2026-11-02T14:17:58Z",
+      "mergedBy": "remcovanmook",
+      "mergeCommit": {
+        "oid": "448c96e8024f3fc8425062b1b8a9229418b476db"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOPzmSBc8AAAABVfxfpw",
+          "commit": {
+            "abbreviatedOid": "3e392d1"
+          },
+          "author": "ichdasich",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "Overall looking good. Just some minor formulation changes.",
+          "createdAt": "2026-11-02T13:51:56Z",
+          "updatedAt": "2026-11-02T14:00:24Z",
+          "comments": [
+            {
+              "originalPosition": 17,
+              "body": "Should be changed to: tobias@internet.wien",
+              "createdAt": "2026-11-02T13:51:56Z",
+              "updatedAt": "2026-11-02T14:00:24Z"
+            },
+            {
+              "originalPosition": 96,
+              "body": "The sentinel is a valid",
+              "createdAt": "2026-11-02T13:53:15Z",
+              "updatedAt": "2026-11-02T14:00:24Z"
+            },
+            {
+              "originalPosition": 98,
+              "body": "know the special semantics defined in this document",
+              "createdAt": "2026-11-02T13:53:36Z",
+              "updatedAt": "2026-11-02T14:00:24Z"
+            },
+            {
+              "originalPosition": 174,
+              "body": "For the lifetime of a host's address assignment, the first-hop router MUST maintain the ability to deliver to that host's /32\nwithout depending on opportunistically learned neighbor cache\nstate, so that expiry of a cache entry cannot permanently break\nreturn traffic.",
+              "createdAt": "2026-11-02T13:55:58Z",
+              "updatedAt": "2026-11-02T14:00:24Z"
+            },
+            {
+              "originalPosition": 202,
+              "body": "Make this a note?",
+              "createdAt": "2026-11-02T13:57:14Z",
+              "updatedAt": "2026-11-02T14:00:24Z"
+            },
+            {
+              "originalPosition": 203,
+              "body": "enables it while unmodified hosts remain on the segment. If no unmodified hosts are connected to a segment, the ARP response MAY be omitted, leaving the segment free of ARP.",
+              "createdAt": "2026-11-02T13:58:27Z",
+              "updatedAt": "2026-11-02T14:00:24Z"
+            },
+            {
+              "originalPosition": 240,
+              "body": "ICMP6 + reference.",
+              "createdAt": "2026-11-02T13:59:19Z",
+              "updatedAt": "2026-11-02T14:00:24Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOPzmSBc8AAAABVgClJg",
+          "commit": {
+            "abbreviatedOid": "347fa42"
+          },
+          "author": "remcovanmook",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-11-02T14:13:11Z",
+          "updatedAt": "2026-11-02T14:13:11Z",
+          "comments": [
+            {
+              "originalPosition": 17,
+              "body": "done",
+              "createdAt": "2026-11-02T14:13:11Z",
+              "updatedAt": "2026-11-02T14:13:11Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOPzmSBc8AAAABVgCu5g",
+          "commit": {
+            "abbreviatedOid": "347fa42"
+          },
+          "author": "remcovanmook",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-11-02T14:13:22Z",
+          "updatedAt": "2026-11-02T14:13:23Z",
+          "comments": [
+            {
+              "originalPosition": 98,
+              "body": "done",
+              "createdAt": "2026-11-02T14:13:22Z",
+              "updatedAt": "2026-11-02T14:13:23Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOPzmSBc8AAAABVgDQFQ",
+          "commit": {
+            "abbreviatedOid": "347fa42"
+          },
+          "author": "remcovanmook",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-11-02T14:14:03Z",
+          "updatedAt": "2026-11-02T14:14:04Z",
+          "comments": [
+            {
+              "originalPosition": 202,
+              "body": "Turned into a note. It resolves the should/may more clearly.",
+              "createdAt": "2026-11-02T14:14:03Z",
+              "updatedAt": "2026-11-02T14:14:04Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOPzmSBc8AAAABVgDZzA",
+          "commit": {
+            "abbreviatedOid": "347fa42"
+          },
+          "author": "remcovanmook",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-11-02T14:14:14Z",
+          "updatedAt": "2026-11-02T14:14:14Z",
+          "comments": [
+            {
+              "originalPosition": 240,
+              "body": "done",
+              "createdAt": "2026-11-02T14:14:14Z",
+              "updatedAt": "2026-11-02T14:14:15Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOPzmSBc8AAAABVgDrIg",
+          "commit": {
+            "abbreviatedOid": "347fa42"
+          },
+          "author": "remcovanmook",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-11-02T14:14:35Z",
+          "updatedAt": "2026-11-02T14:14:36Z",
+          "comments": [
+            {
+              "originalPosition": 96,
+              "body": "done",
+              "createdAt": "2026-11-02T14:14:35Z",
+              "updatedAt": "2026-11-02T14:14:36Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOPzmSBc8AAAABVgEHig",
+          "commit": {
+            "abbreviatedOid": "347fa42"
+          },
+          "author": "remcovanmook",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-11-02T14:15:11Z",
+          "updatedAt": "2026-11-02T14:15:11Z",
+          "comments": [
+            {
+              "originalPosition": 174,
+              "body": "good change. ",
+              "createdAt": "2026-11-02T14:15:11Z",
+              "updatedAt": "2026-11-02T14:15:12Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOPzmSBc8AAAABVgEZwA",
+          "commit": {
+            "abbreviatedOid": "347fa42"
+          },
+          "author": "remcovanmook",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-11-02T14:15:33Z",
+          "updatedAt": "2026-11-02T14:15:34Z",
+          "comments": [
+            {
+              "originalPosition": 203,
+              "body": "see other note about this :)",
+              "createdAt": "2026-11-02T14:15:33Z",
+              "updatedAt": "2026-11-02T14:15:34Z"
+            }
+          ]
         }
       ]
     }
